@@ -2,10 +2,14 @@
 
 import NormalBattleLevel from '../normal-battle/normal-battle-level';
 import AdvanceBattleLevel from '../advance-battle/advance-battle-level';
-import TimeClock from '../common/time-clock';
+import TimeclockContainer from '../common/timeclock-container';
 import JackpotUser from './jackpot-user';
 import BidContainer from '../common/bid-container';
-import { getUserObjectById } from '../../../utils/functions';
+import { getUserObjectById, convertAmountToCommaString } from '../../../utils/functions';
+import {
+	EVT_EMIT_JACKPOT_UPDATE_AMOUNT,
+	EVT_EMIT_JACKPOT_SHOW_QUIT_BUTTON
+} from '../../constants';
 
 function Jackpot(data)
 {
@@ -26,26 +30,50 @@ function Jackpot(data)
 	this.normalBattleLevels 		= [];
 	this.advanceBattleLevels 		= [];
 	this.bidContainer 				= new BidContainer();
-	this.timeclock 					= new TimeClock(this);
+	this.timeclockContainer 		= new TimeclockContainer(this);
 
 	// Add Battle Levels
 	this.addBattleLevels(data);
-	this.setTimeclockData(data);
+	this.setTimeclocks(data);
 }
 
-Jackpot.prototype.setTimeclockData = function(data)
+Jackpot.prototype.setTimeclocks = function(data)
 {
-	this.timeclock.setInitialData([
+	// Set the clocks
+	this.timeclockContainer.setClocks([
 	{
-		initialTime : data.gameClockTime,
-		durationKey : 'gameClockDuration',
-		remainingKey: 'gameClockRemaining'
+		clockName 	: 'game',
+		duration 	: data.gameClockTime
 	},
 	{
-		initialTime : data.doomsDayTime,
-		durationKey : 'doomsdayClockDuration',
-		remainingKey: 'doomsdayClockRemaining'
+		clockName 	: 'doomsday',
+		duration 	: data.doomsDayTime
 	}]);
+
+	// Set update jackpot amoutn callback
+	if(this.secondsToIncreaseAmount && this.increaseAmount)
+    {
+    	this.timeclockContainer.getClock('game').runEveryXSecond(this.secondsToIncreaseAmount, this.updateJackpotAmount.bind(this));
+    }
+}
+
+Jackpot.prototype.updateJackpotAmount = function(elapsed)
+{
+	this.JackpotAmount 	= Number(parseFloat(this.JackpotAmount, 10) + parseFloat(this.increaseAmount, 10)).toFixed(2);
+	this.sendUpdatedAmountToJackpotSockets();
+	this.sendUpdatedAmountToBattleSockets();
+}
+
+Jackpot.prototype.sendUpdatedAmountToJackpotSockets = function()
+{
+	var amount = convertAmountToCommaString(this.JackpotAmount);
+
+	global.ticktockGameState.jackpotSocketNs.in(this.getRoomName()).emit(EVT_EMIT_JACKPOT_UPDATE_AMOUNT, {amount: amount});
+}
+
+Jackpot.prototype.sendUpdatedAmountToBattleSockets = function()
+{
+	
 }
 
 Jackpot.prototype.addUserById = function(userId)
@@ -104,7 +132,7 @@ Jackpot.prototype.addBattleLevels = function(data)
 
 Jackpot.prototype.countDownJackpotTimer = function()
 {
-	this.timeclock.countDown();
+	this.timeclockContainer.countDown();
 }
 
 Jackpot.prototype.countDownBattlesTimer = function()
@@ -162,7 +190,15 @@ Jackpot.prototype.emitBattlesInfoEverySecond = function()
 
 Jackpot.prototype.emitShowQuitButton = function()
 {
+	var gcRemaining = this.timeclockContainer.getClock('game').remaining,
+		ddRemaining = this.timeclockContainer.getClock('doomsday').remaining;
 
+	if(gcRemaining > 0 && ddRemaining <= 0)
+    {
+        global.ticktockGameState.jackpotSocketNs.in(this.getRoomName()).emit(EVT_EMIT_JACKPOT_SHOW_QUIT_BUTTON, {
+            status: true
+        });
+    }
 }
 
 Jackpot.prototype.emitJackpotAmountEverySecond = function()
@@ -170,14 +206,46 @@ Jackpot.prototype.emitJackpotAmountEverySecond = function()
 
 }
 
+Jackpot.prototype.finishJackpotEverySecond = function()
+{
+	if(this.timeclockContainer.getClock('game').remaining == 0)
+    {
+        this.finishGame();
+    }
+}
+
+Jackpot.prototype.finishBattlesEverySecond = function()
+{
+	if(this.normalBattleLevels.length > 0)
+	{
+		for(var i in this.normalBattleLevels)
+		{
+			this.normalBattleLevels[i].finishGameEverySecond();
+		}
+	}
+
+	if(this.advanceBattleLevels.length > 0)
+	{
+		for(var k in this.advanceBattleLevels)
+		{
+			this.advanceBattleLevels[k].finishGameEverySecond();
+		}
+	}
+}
+
 Jackpot.prototype.emitSomeoneJoined = function()
 {
 
 }
 
+Jackpot.prototype.emitSomeoneQutted = function()
+{
+	
+}
+
 Jackpot.prototype.showConsoleInfoEverySecond = function()
 {
-	console.log(this.title, this.timeclock.gameClockRemaining, this.timeclock.doomsdayClockRemaining);
+	console.log(this.title, this.timeclockContainer.getClock('game').remaining, this.timeclockContainer.getClock('doomsday').remaining);
 }
 
 export default Jackpot;

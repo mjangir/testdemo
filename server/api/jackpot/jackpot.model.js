@@ -66,7 +66,7 @@ module.exports = function(sequelize, DataTypes)
 
     increaseAmount : {
       field         : "increase_amount",
-      type          : DataTypes.INTEGER(11),
+      type          : DataTypes.DECIMAL(10,2),
       allowNull     : true,
       defaultValue  : null,
       comment       : "Increase Amount"

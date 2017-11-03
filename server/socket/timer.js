@@ -26,13 +26,6 @@ function processJackpots()
                 continue;
             }
 
-            // If game clock hits zero, finish the game. No further actions
-            if(jackpot.gameClockRemaining == 0)
-            {
-                jackpot.finishGame();
-                continue;
-            }
-
             // Count down jackpot timer
             jackpot.countDownJackpotTimer();
 
@@ -50,6 +43,12 @@ function processJackpots()
 
             // If game clock is running & doomsday is over, show quit button
             jackpot.emitShowQuitButton();
+
+            // If game clock hits zero, finish the game. No further actions
+            jackpot.finishJackpotEverySecond();
+
+            // Check finish game for jackpot battles
+            jackpot.finishBattlesEverySecond();
 
             // Temporary
             jackpot.showConsoleInfoEverySecond();

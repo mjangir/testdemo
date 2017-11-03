@@ -2,9 +2,17 @@
 
 import { 
 	EVT_ON_CLIENT_DISCONNECT, 
-	EVT_EMIT_NO_JACKPOT_TO_PLAY 
+	EVT_EMIT_JACKPOT_NO_JACKPOT_TO_PLAY,
+	EVT_ON_JACKPOT_GAME_QUITTED
 } from '../constants';
+
+import getUserJackpot from '../utils/get-user-jackpot';
+import joinUserToJackpot from '../utils/join-user-to-jackpot';
 import onDisconnect from './disconnect';
+import handlePostConnectJackpotEvents from './jackpot';
+import handlePostConnectNormalBattleEvents from './normal-battle';
+import handlePostConnectAdvanceBattleEvents from './advance-battle';
+import handlePostConnectMoneyBattleEvents from './money-battle';
 
 /**
  * Emit No Jackpots To Play
@@ -14,82 +22,9 @@ import onDisconnect from './disconnect';
  */
 function emitNoJackpotsToPlay(socket)
 {
-	socket.emit(EVT_EMIT_NO_JACKPOT_TO_PLAY, {
+	socket.emit(EVT_EMIT_JACKPOT_NO_JACKPOT_TO_PLAY, {
  		error: "No Jackpot Found To Play. Please try again after some time"
  	});
-}
-
-/**
- * Emit No Jackpots To Play
- *
- * @param  {Integer} userId
- * @return {Promise}
- */
-function getCurrentJackpotByUserId(userId)
-{
-	var jackpots = global.ticktockGameState.jackpots,
-		returnjp = false,
-		jackpotUser;
-
-	for(var k in jackpots)
-   	{
-     	jackpotUser = jackpots[k].getUserById(userId);
-
-     	if(jackpotUser !== false && !jackpotUser.isQuitted() && jackpots[k].gameStatus == 'STARTED')
-     	{
-     		returnjp = jackpots[k];
-     	}
-   	}
-
-   	return new Promise(function(resolve, reject)
-   	{
-   		resolve(returnjp);
-   	});
-}
-
-/**
- * Pick a new jackpot for the user
- *
- * @param  {Jackpot} currentJackpot
- * @param  {Integer} userId
- * @return {Promise}
- */
-function getNewJackpotByUserId(currentJackpot, userId)
-{
-	var finalJackpot 	= currentJackpot,
-		jackpots 		= global.ticktockGameState.jackpots;
-
-	// First try to get any already started and having doomsday seconds > 0
-	if(finalJackpot == false)
-	{
-		for(var k in jackpots)
-	   	{
-	     	if(jackpots[k].gameStatus == 'STARTED' && jackpots[k].doomsdayClockRemaining > 0)
-	     	{
-	     		finalJackpot = jackpots[k];
-	     		break;
-	     	}
-	   	}
-	}
-	
-	// Then try to get the first not started jackpot
-	if(finalJackpot == false)
-	{
-		for(var j in jackpots)
-	   	{
-	   		if(jackpots[k].gameStatus == 'NOT_STARTED')
-	     	{
-	     		finalJackpot = jackpots[k];
-	     		break;
-	     	}
-	   	}
-	}
-   	
-   	// Return the promise
-	return new Promise(function(resolve, reject)
-	{
-		resolve(finalJackpot);
-	});
 }
 
 /**
@@ -98,43 +33,24 @@ function getNewJackpotByUserId(currentJackpot, userId)
  * @param  {Socket} socket
  * @return {*}
  */
-function getUserJackpot(socket)
+function findUserJackpot(socket)
 {
-	var jackpots   		= global.ticktockGameState.jackpots,
-        handshake   	= socket.handshake,
-        userId      	= handshake.query.userId;
+	var gotJackpot = getUserJackpot('socket', socket);
 
-    if(jackpots.length == 0)
+    if(gotJackpot === false)
     {
      	emitNoJackpotsToPlay(socket);
      	return;
     }
 
-    // First get existing jackpot the user is playing in
-    getCurrentJackpotByUserId(userId).then(function(currentJackpot)
+    gotJackpot.then(function(data)
  	{
- 		return getNewJackpotByUserId(currentJackpot, userId);
+ 		var jackpot = data.jackpot,
+ 			userId 	= data.userId;
 
- 	}).then(function(jackpot)
- 	{
  		if(jackpot !== false)
  		{
- 			var user = jackpot.getUserById(userId) || jackpot.addUserById(userId),
- 				room = jackpot.getRoomName();
-
- 			user.isActive 		= true;
- 			user.currentSocket 	= socket;
- 			socket.currentRoom  = room;
-            socket.jackpot      = jackpot;
-            socket.jackpotUser  = user;
-
-            // Join the room now
-            socket.join(room);
-
-            // Emit socket events
-            jackpot.emitSomeoneJoined();
-            user.emitMeJoined();
-            user.emitCanIBid();
+ 			joinUserToJackpot(jackpot, socket, userId);
  		}
  		else
  		{
@@ -154,6 +70,18 @@ function handlePostConnectEvents(socket)
 {
 	// On socket disconnect
     socket.on(EVT_ON_CLIENT_DISCONNECT, onDisconnect(socket));
+
+    // Handle Post Connect Jackpot Events
+    handlePostConnectJackpotEvents(socket);
+
+    // Handle Post Connect Normal Battle Events
+    handlePostConnectNormalBattleEvents(socket);
+
+    // Handle Post Connect Advance Battle Events
+    handlePostConnectAdvanceBattleEvents(socket);
+
+    // Handle Post Connect Money Battle Events
+    handlePostConnectMoneyBattleEvents(socket);
 }
 
 /**
@@ -164,8 +92,8 @@ function handlePostConnectEvents(socket)
  */
 export default function(socket)
 {
-	// Get appropriate user jackpot
-	getUserJackpot(socket);
+	// Find appropriate user jackpot
+	findUserJackpot(socket);
 
 	// Handle post connect events
     handlePostConnectEvents(socket);

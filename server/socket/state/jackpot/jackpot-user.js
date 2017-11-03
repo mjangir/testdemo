@@ -1,8 +1,8 @@
 'use strict';
 
 import { 
-	EVT_EMIT_CAN_I_PLACE_BID,
-	EVT_EMIT_ME_JOINED 
+	EVT_EMIT_JACKPOT_CAN_I_BID,
+	EVT_EMIT_JACKPOT_ME_JOINED 
 } from '../../constants';
 
 import { 
@@ -46,7 +46,7 @@ JackpotUser.prototype.emitMeJoined = function()
 		jackpot 	= this.jackpot,
 		userInfo 	= getUserObjectById(this.userId);
 
-	socket.emit(EVT_EMIT_ME_JOINED, {
+	socket.emit(EVT_EMIT_JACKPOT_ME_JOINED, {
 	    jackpotInfo:    {
 	        uniqueId:    jackpot.uniqueId,
 	        name:        jackpot.title,
@@ -72,11 +72,11 @@ JackpotUser.prototype.emitCanIBid = function()
 
 	if(users.length < minPlayers)
 	{
-		namespace.in(room).emit(EVT_EMIT_CAN_I_PLACE_BID, {canIBid: false});
+		namespace.in(room).emit(EVT_EMIT_JACKPOT_CAN_I_BID, {canIBid: false});
 	}
 	else
 	{
-		socket.emit(EVT_EMIT_CAN_I_PLACE_BID, {
+		socket.emit(EVT_EMIT_JACKPOT_CAN_I_BID, {
 			canIBid: (lastBidUserId != this.userId)
 		});
 	}

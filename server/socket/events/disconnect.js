@@ -14,7 +14,7 @@ export default function onDisconnect(socket)
 	return function()
 	{
 		var user 		= socket.jackpotUser,
-			namespace 	= global.ticktockGameState.jackpotSocketNamespace;
+			namespace 	= global.ticktockGameState.jackpotSocketNs;
 
 		if(user && user instanceof JackpotUser)
 		{

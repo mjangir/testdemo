@@ -18,7 +18,7 @@ function bindJackpotSocketEventHandlers(socketio)
     var namespace = socketio.of('jackpot');
 
     // Register as global namespace
-    global.ticktockGameState.jackpotSocketNamespace = namespace;
+    global.ticktockGameState.jackpotSocketNs = namespace;
 
     // On connection
     namespace.on(EVT_ON_CLIENT_CONNECTION, onConnect);

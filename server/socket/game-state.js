@@ -51,6 +51,9 @@ function getAllJackpots()
             'uniqueId',
             'status'
         ],
+        order: [
+            ['id', 'ASC']
+        ],
         include: [ { model: JackpotBattleLevelModel, as: 'JackpotBattleLevels'} ]
     });
 }

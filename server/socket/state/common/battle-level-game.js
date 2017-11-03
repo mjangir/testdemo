@@ -25,4 +25,9 @@ BattleLevelGame.prototype.countDown = function()
 	}
 }
 
+BattleLevelGame.prototype.finishGameEverySecond = function()
+{
+	
+}
+
 export default BattleLevelGame;
