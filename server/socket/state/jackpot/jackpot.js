@@ -3,6 +3,7 @@
 import NormalBattleLevel from './normal-battle/normal-battle-level';
 import AdvanceBattleLevel from './advance-battle/advance-battle-level';
 import JackpotUser from './jackpot-user';
+import BidContainer from '../bid-container';
 import { getUserObjectById } from '../../../utils/functions';
 
 function Jackpot(data)
@@ -20,9 +21,10 @@ function Jackpot(data)
 	this.uniqueId 					= data.uniqueId;
 	this.isActive 					= data.status == 'ACTIVE' ? true : false;
 
-	this.users 				= [];
+	this.users 						= [];
 	this.normalBattleLevels 		= [];
 	this.advanceBattleLevels 		= [];
+	this.bidContainer 				= new BidContainer();
 
 	// Add Battle Levels
 	this.addBattleLevels(data);
@@ -113,7 +115,26 @@ Jackpot.prototype.countDownBattlesTimer = function()
 	}
 }
 
+Jackpot.prototype.placeBid = function(user)
+{
+	var userId = user instanceof JackpotUser ? user.userId : user;
+
+	return this.bidContainer.placeBid(userId);
+}
+
 Jackpot.prototype.finishGame = function()
+{
+	var context = this;
+	
+	this.gameStatus = 'FINISHED';
+
+	setTimeout(function()
+	{
+		context.saveDataInDB();
+	});
+}
+
+Jackpot.prototype.saveDataInDB = function()
 {
 
 }

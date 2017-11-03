@@ -50,7 +50,7 @@ JackpotUser.prototype.emitMeJoined = function()
 	    jackpotInfo:    {
 	        uniqueId:    jackpot.uniqueId,
 	        name:        jackpot.title,
-	        amount:      convertAmountToCommaString(jackpot.amount)
+	        amount:      convertAmountToCommaString(jackpot.JackpotAmount)
 	    },
 	    userInfo: {
 	        name:               userInfo.name,
