@@ -1,9 +1,10 @@
 'use strict';
 
-import NormalBattleLevel from './normal-battle/normal-battle-level';
-import AdvanceBattleLevel from './advance-battle/advance-battle-level';
+import NormalBattleLevel from '../normal-battle/normal-battle-level';
+import AdvanceBattleLevel from '../advance-battle/advance-battle-level';
+import TimeClock from '../common/time-clock';
 import JackpotUser from './jackpot-user';
-import BidContainer from '../bid-container';
+import BidContainer from '../common/bid-container';
 import { getUserObjectById } from '../../../utils/functions';
 
 function Jackpot(data)
@@ -25,9 +26,26 @@ function Jackpot(data)
 	this.normalBattleLevels 		= [];
 	this.advanceBattleLevels 		= [];
 	this.bidContainer 				= new BidContainer();
+	this.timeclock 					= new TimeClock(this);
 
 	// Add Battle Levels
 	this.addBattleLevels(data);
+	this.setTimeclockData(data);
+}
+
+Jackpot.prototype.setTimeclockData = function(data)
+{
+	this.timeclock.setInitialData([
+	{
+		initialTime : data.gameClockTime,
+		durationKey : 'gameClockDuration',
+		remainingKey: 'gameClockRemaining'
+	},
+	{
+		initialTime : data.doomsDayTime,
+		durationKey : 'doomsdayClockDuration',
+		remainingKey: 'doomsdayClockRemaining'
+	}]);
 }
 
 Jackpot.prototype.addUserById = function(userId)
@@ -86,14 +104,7 @@ Jackpot.prototype.addBattleLevels = function(data)
 
 Jackpot.prototype.countDownJackpotTimer = function()
 {
-	if(this.gameClockRemaining  > 0)
-    {
-        this.gameClockRemaining -= 1;
-    }
-    if(this.doomsdayClockRemaining  > 0)
-    {
-        this.doomsdayClockRemaining -= 1;
-    }
+	this.timeclock.countDown();
 }
 
 Jackpot.prototype.countDownBattlesTimer = function()
@@ -125,7 +136,7 @@ Jackpot.prototype.placeBid = function(user)
 Jackpot.prototype.finishGame = function()
 {
 	var context = this;
-	
+
 	this.gameStatus = 'FINISHED';
 
 	setTimeout(function()
@@ -166,7 +177,7 @@ Jackpot.prototype.emitSomeoneJoined = function()
 
 Jackpot.prototype.showConsoleInfoEverySecond = function()
 {
-	console.log(this.title, this.gameClockRemaining, this.doomsdayClockRemaining);
+	console.log(this.title, this.timeclock.gameClockRemaining, this.timeclock.doomsdayClockRemaining);
 }
 
 export default Jackpot;

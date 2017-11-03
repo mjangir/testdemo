@@ -1,8 +1,10 @@
 'use strict';
 
+import BidContainer from './bid-container';
+
 function BattleLevelGame()
 {
-
+    this.bidContainer = new BidContainer();
 }
 
 BattleLevelGame.prototype.placeBid = function()

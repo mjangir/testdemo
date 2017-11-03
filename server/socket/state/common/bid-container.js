@@ -1,7 +1,7 @@
 'use strict';
 
 import Bid from './bid';
-import { getUserObjectById } from '../../utils/functions';
+import { getUserObjectById } from '../../../utils/functions';
 
 /**
  * Constructor
@@ -65,7 +65,7 @@ BidContainer.prototype.getLongestBid = function()
 BidContainer.prototype.getLongestBidDuration = function()
 {
 	var longestBid = this.getLongestBid();
-	
+
 	return longestBid != null ? longestBid.getDuration() : null;
 }
 
@@ -111,7 +111,7 @@ BidContainer.prototype.getLastBid = function()
 BidContainer.prototype.getLastBidDuration = function()
 {
 	var lastBid = this.getLastBid();
-	
+
 	return lastBid != null ? lastBid.getDuration() : null;
 }
 

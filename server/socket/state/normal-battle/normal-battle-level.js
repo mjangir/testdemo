@@ -1,8 +1,8 @@
 'use strict'
 
-import BattleLevel from '../battle-level';
+import BattleLevel from '../common/battle-level';
 
-function AdvanceBattleLevel(data)
+function NormalBattleLevel(data)
 {
 	this.id 						= data.id,
 	this.order 						= data.order;
@@ -20,6 +20,6 @@ function AdvanceBattleLevel(data)
 	this.games 						= [];
 }
 
-AdvanceBattleLevel.prototype = Object.create(BattleLevel.prototype);
+NormalBattleLevel.prototype = Object.create(BattleLevel.prototype);
 
-export default AdvanceBattleLevel;
+export default NormalBattleLevel;
