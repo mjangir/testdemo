@@ -23,6 +23,12 @@ function processJackpots()
             // If jackpot is not started or finished, do nothing
             if(jackpot.isNotStarted() || jackpot.isFinished())
             {
+                // Send current jackpot bidding info to all sockets
+                jackpot.emitJackpotInfoEverySecond();
+
+                // Send jackpot battle levels current bidding info
+                jackpot.emitBattlesInfoEverySecond();
+            
                 continue;
             }
 

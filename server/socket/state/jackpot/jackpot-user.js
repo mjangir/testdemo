@@ -85,7 +85,7 @@ JackpotUser.prototype.emitMeJoined = function()
 	    },
 	    userInfo: {
 	        name:               userInfo.name,
-	        availableBids:      this.availableBids,
+	        availableBids:      this.availableBids['jackpot'],
 	        totalPlacedBids:    bidsByUser.length,
 	    }
 	});
@@ -96,7 +96,7 @@ JackpotUser.prototype.emitCanIBid = function()
 	var socket 			= this.currentSocket,
 		users 			= this.jackpot.users,
 		minPlayers 		= this.jackpot.minPlayersRequired,
-		lastBidUserId 	= this.jackpot.lastBidUserId,
+		lastBidUserId 	= this.jackpot.bidContainer.getLastBidUserId(),
 		room 			= this.jackpot.getRoomName(),
 		canIBid 		= false,
 		namespace 		= global.ticktockGameState.jackpotSocketNs;

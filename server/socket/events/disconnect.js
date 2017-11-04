@@ -20,7 +20,7 @@ export default function onDisconnect(socket)
 		{
 			user.markAsInactive().then(function(jackpot)
 			{
-				namespace.in(socket.currentRoom).emit(EVT_EMIT_ON_CLIENT_DISCONNECT, {});
+				namespace.in(socket.currentRoom).emit(EVT_EMIT_ON_CLIENT_DISCONNECT, jackpot.getUpdatedJackpotData());
 			});
 		}
 	}

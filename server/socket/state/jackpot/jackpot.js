@@ -12,7 +12,8 @@ import {
 	EVT_EMIT_JACKPOT_UPDATE_AMOUNT,
 	EVT_EMIT_JACKPOT_SHOW_QUIT_BUTTON,
 	EVT_EMIT_JACKPOT_UPDATES_TO_ITS_ROOM,
-	EVT_EMIT_JACKPOT_UPDATE_TIMER
+	EVT_EMIT_JACKPOT_UPDATE_TIMER,
+	EVT_EMIT_JACKPOT_CAN_I_BID
 } from '../../constants';
 
 const JackpotModel = sqldb.Jackpot;
@@ -93,6 +94,7 @@ Jackpot.prototype.afterUserPlacedBid = function(bidContainer, parent, socket, bi
 	{
 		user.afterPlacedBid(bidContainer, parent, socket, bid);
 		parent.increaseClockOnNewBid();
+		socket.broadcast.in(this.getRoomName()).emit(EVT_EMIT_JACKPOT_CAN_I_BID, {canIBid: true});
 	}
 }
 
@@ -114,7 +116,7 @@ Jackpot.prototype.startGame = function()
 
 Jackpot.prototype.updateStatusInDB = function(status)
 {
-	return JackpotModel.find({where: { id: this.metaData.id } })
+	return JackpotModel.find({where: { id: this.id } })
     .then(function(jackpot)
     {
         return jackpot.updateAttributes({gameStatus: status});
@@ -291,9 +293,12 @@ Jackpot.prototype.emitJackpotInfoEverySecond = function()
         gameClockTime       : this.getClock('game').getFormattedRemaining(),
         doomsDayClockTime   : this.getClock('doomsday').getFormattedRemaining(),
         lastBidDuration     : this.bidContainer.getLastBidDuration(true),
+        lastBidUserName 	: this.bidContainer.getLastBidUserName(),
         longestBidDuration  : this.bidContainer.getLongestBidDuration(true),
         longestBidUserName  : this.bidContainer.getLongestBidUserName()
     });
+
+    this.emitUpdatesToItsRoom();
 }
 
 Jackpot.prototype.emitBattlesInfoEverySecond = function()
@@ -379,16 +384,13 @@ Jackpot.prototype.getUpdatedJackpotData = function()
         longestBid      : null,
         averageBidBank  : this.getAverageBidBank(),
         totalBids       : placedBids.length,
-        canIBid         : true,
         currentBidUser  : {name: bidContainer.getLastBidUserName()}
-    }
-
-	return {};
+    };
 }
 
 Jackpot.prototype.showConsoleInfoEverySecond = function()
 {
-	console.log(this.title, this.getClockRemaining('game'), this.getClockRemaining('doomsday'));
+	//console.log(this.title, this.getClockRemaining('game'), this.getClockRemaining('doomsday'));
 }
 
 export default Jackpot;
