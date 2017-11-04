@@ -31,7 +31,7 @@ function leaveCurrentAndGetNewJackpot(jackpot, userId, socket)
     	
     	// Make this user's online staus inactive for this jackpot and game status too
 	    user.isActive    	= false;
-	    user.userGameStatus = 'QUITTED';
+	    user.quitGame();
 
 	    // Emit event to this user that he has been quitted from this game
 	    socket.emit(EVT_EMIT_JACKPOT_GAME_QUITTED, {status: true});

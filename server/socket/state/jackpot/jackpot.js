@@ -5,14 +5,21 @@ import AdvanceBattleLevel from '../advance-battle/advance-battle-level';
 import TimeclockContainer from '../common/timeclock-container';
 import JackpotUser from './jackpot-user';
 import BidContainer from '../common/bid-container';
+import sqldb from '../../../sqldb';
+import _ from 'lodash';
 import { getUserObjectById, convertAmountToCommaString } from '../../../utils/functions';
 import {
 	EVT_EMIT_JACKPOT_UPDATE_AMOUNT,
-	EVT_EMIT_JACKPOT_SHOW_QUIT_BUTTON
+	EVT_EMIT_JACKPOT_SHOW_QUIT_BUTTON,
+	EVT_EMIT_JACKPOT_UPDATES_TO_ITS_ROOM,
+	EVT_EMIT_JACKPOT_UPDATE_TIMER
 } from '../../constants';
+
+const JackpotModel = sqldb.Jackpot;
 
 function Jackpot(data)
 {
+	this.id 						= data.id,
 	this.title 						= data.title;
 	this.JackpotAmount 				= data.amount;
 	this.minPlayersRequired 		= data.minPlayersRequired;
@@ -25,16 +32,93 @@ function Jackpot(data)
 	this.gameStatus 				= data.gameStatus;
 	this.uniqueId 					= data.uniqueId;
 	this.isActive 					= data.status == 'ACTIVE' ? true : false;
+	this.startedOn 					= null;
 
 	this.users 						= [];
 	this.normalBattleLevels 		= [];
 	this.advanceBattleLevels 		= [];
-	this.bidContainer 				= new BidContainer();
+	this.bidContainer 				= new BidContainer(this);
 	this.timeclockContainer 		= new TimeclockContainer(this);
 
 	// Add Battle Levels
 	this.addBattleLevels(data);
 	this.setTimeclocks(data);
+}
+
+Jackpot.prototype.isStarted = function()
+{
+	return this.gameStatus == 'STARTED';
+}
+
+Jackpot.prototype.isNotStarted = function()
+{
+	return this.gameStatus == 'NOT_STARTED';
+}
+
+Jackpot.prototype.isFinished = function()
+{
+	return this.gameStatus == 'FINISHED';
+}
+
+Jackpot.prototype.getRoomName = function()
+{
+	return 'JACKPOT_ROOM_' + this.uniqueId;
+}
+
+Jackpot.prototype.getClockRemaining = function(clockName)
+{
+	return this.timeclockContainer.getClock(clockName).remaining;
+}
+
+Jackpot.prototype.getClockElapsed = function(clockName)
+{
+	return this.timeclockContainer.getClock(clockName).elapsed;
+}
+
+Jackpot.prototype.getClock = function(clockName)
+{
+	return this.timeclockContainer.getClock(clockName);
+}
+
+Jackpot.prototype.placeBid = function(userId, socket)
+{
+	return this.bidContainer.placeBid(userId, socket, this.afterUserPlacedBid.bind(this));
+}
+
+Jackpot.prototype.afterUserPlacedBid = function(bidContainer, parent, socket, bid)
+{
+	var user = this.getUserById(bid.userId);
+
+	if(user)
+	{
+		user.afterPlacedBid(bidContainer, parent, socket, bid);
+		parent.increaseClockOnNewBid();
+	}
+}
+
+Jackpot.prototype.increaseClockOnNewBid = function()
+{
+	var key 		= 'jackpot_setting_game_clock_seconds_increment_on_bid',
+		settings 	= global.ticktockGameState.settings,
+		seconds 	= settings.hasOwnProperty(key) && settings[key] != "" ? parseInt(settings[key], 10) : 10;
+
+	this.getClock('game').increaseBy(seconds);
+}
+
+Jackpot.prototype.startGame = function()
+{
+	this.gameStatus = 'STARTED';
+	this.startedOn 	= new Date();
+	this.updateStatusInDB('STARTED');
+}
+
+Jackpot.prototype.updateStatusInDB = function(status)
+{
+	return JackpotModel.find({where: { id: this.metaData.id } })
+    .then(function(jackpot)
+    {
+        return jackpot.updateAttributes({gameStatus: status});
+    });
 }
 
 Jackpot.prototype.setTimeclocks = function(data)
@@ -53,13 +137,13 @@ Jackpot.prototype.setTimeclocks = function(data)
 	// Set update jackpot amoutn callback
 	if(this.secondsToIncreaseAmount && this.increaseAmount)
     {
-    	this.timeclockContainer.getClock('game').runEveryXSecond(this.secondsToIncreaseAmount, this.updateJackpotAmount.bind(this));
+    	this.getClock('game').runEveryXSecond(this.secondsToIncreaseAmount, this.updateJackpotAmount.bind(this));
     }
 }
 
 Jackpot.prototype.updateJackpotAmount = function(elapsed)
 {
-	this.JackpotAmount 	= Number(parseFloat(this.JackpotAmount, 10) + parseFloat(this.increaseAmount, 10)).toFixed(2);
+	this.JackpotAmount = Number(parseFloat(this.JackpotAmount, 10) + parseFloat(this.increaseAmount, 10)).toFixed(2);
 	this.sendUpdatedAmountToJackpotSockets();
 	this.sendUpdatedAmountToBattleSockets();
 }
@@ -74,6 +158,39 @@ Jackpot.prototype.sendUpdatedAmountToJackpotSockets = function()
 Jackpot.prototype.sendUpdatedAmountToBattleSockets = function()
 {
 	
+}
+
+Jackpot.prototype.getUsers = function()
+{
+	return this.users;
+}
+
+Jackpot.prototype.getActiveUsers = function()
+{
+	return _.filter(this.users, function(o)
+	{ 
+	    return o.isActive == true; 
+	});
+}
+
+Jackpot.prototype.getInActiveUsers = function()
+{
+	return _.filter(this.users, function(o)
+	{ 
+	    return o.isActive == false; 
+	});
+}
+
+Jackpot.prototype.getAverageBidBank = function()
+{
+	var totalAvailableBids = 0;
+
+	for(var k in this.users)
+	{
+		totalAvailableBids += this.users[k].availableBids['jackpot'];
+	}
+
+	return Math.round(totalAvailableBids/this.users.length);
 }
 
 Jackpot.prototype.addUserById = function(userId)
@@ -100,11 +217,6 @@ Jackpot.prototype.getUserById = function(userId)
 	}
 
 	return false;
-}
-
-Jackpot.prototype.getRoomName = function()
-{
-	return 'JACKPOT_ROOM_' + this.uniqueId;
 }
 
 Jackpot.prototype.addBattleLevels = function(data)
@@ -154,13 +266,6 @@ Jackpot.prototype.countDownBattlesTimer = function()
 	}
 }
 
-Jackpot.prototype.placeBid = function(user)
-{
-	var userId = user instanceof JackpotUser ? user.userId : user;
-
-	return this.bidContainer.placeBid(userId);
-}
-
 Jackpot.prototype.finishGame = function()
 {
 	var context = this;
@@ -180,7 +285,15 @@ Jackpot.prototype.saveDataInDB = function()
 
 Jackpot.prototype.emitJackpotInfoEverySecond = function()
 {
+	var roomName = this.getRoomName();
 
+    global.ticktockGameState.jackpotSocketNs.in(roomName).emit(EVT_EMIT_JACKPOT_UPDATE_TIMER, {
+        gameClockTime       : this.getClock('game').getFormattedRemaining(),
+        doomsDayClockTime   : this.getClock('doomsday').getFormattedRemaining(),
+        lastBidDuration     : this.bidContainer.getLastBidDuration(true),
+        longestBidDuration  : this.bidContainer.getLongestBidDuration(true),
+        longestBidUserName  : this.bidContainer.getLongestBidUserName()
+    });
 }
 
 Jackpot.prototype.emitBattlesInfoEverySecond = function()
@@ -190,8 +303,8 @@ Jackpot.prototype.emitBattlesInfoEverySecond = function()
 
 Jackpot.prototype.emitShowQuitButton = function()
 {
-	var gcRemaining = this.timeclockContainer.getClock('game').remaining,
-		ddRemaining = this.timeclockContainer.getClock('doomsday').remaining;
+	var gcRemaining = this.getClockRemaining('game'),
+		ddRemaining = this.getClockRemaining('doomsday');
 
 	if(gcRemaining > 0 && ddRemaining <= 0)
     {
@@ -208,7 +321,7 @@ Jackpot.prototype.emitJackpotAmountEverySecond = function()
 
 Jackpot.prototype.finishJackpotEverySecond = function()
 {
-	if(this.timeclockContainer.getClock('game').remaining == 0)
+	if(this.getClockRemaining('game') == 0)
     {
         this.finishGame();
     }
@@ -216,36 +329,66 @@ Jackpot.prototype.finishJackpotEverySecond = function()
 
 Jackpot.prototype.finishBattlesEverySecond = function()
 {
-	if(this.normalBattleLevels.length > 0)
+	var normalBattles 	= this.normalBattleLevels,
+		advanceBattles 	= this.advanceBattleLevels;
+
+	if(normalBattles.length > 0)
 	{
-		for(var i in this.normalBattleLevels)
+		for(var i in normalBattles)
 		{
-			this.normalBattleLevels[i].finishGameEverySecond();
+			normalBattles[i].finishGameEverySecond();
 		}
 	}
 
-	if(this.advanceBattleLevels.length > 0)
+	if(advanceBattles.length > 0)
 	{
-		for(var k in this.advanceBattleLevels)
+		for(var k in advanceBattles)
 		{
-			this.advanceBattleLevels[k].finishGameEverySecond();
+			advanceBattles[k].finishGameEverySecond();
 		}
 	}
 }
 
 Jackpot.prototype.emitSomeoneJoined = function()
 {
-
+	this.emitUpdatesToItsRoom();
 }
 
 Jackpot.prototype.emitSomeoneQutted = function()
 {
-	
+	this.emitUpdatesToItsRoom();
+}
+
+Jackpot.prototype.emitUpdatesToItsRoom = function()
+{
+	var room = this.getRoomName(),
+		data = this.getUpdatedJackpotData();
+
+	global.ticktockGameState.jackpotSocketNs.in(room).emit(EVT_EMIT_JACKPOT_UPDATES_TO_ITS_ROOM, data);
+}
+
+Jackpot.prototype.getUpdatedJackpotData = function()
+{
+	var bidContainer 	= this.bidContainer,
+		placedBids 		= bidContainer.getAllBids();
+
+	return {
+        totalUsers      : this.getUsers().length,
+        activePlayers   : this.getActiveUsers().length,
+        remainingPlayers: this.getInActiveUsers().length,
+        longestBid      : null,
+        averageBidBank  : this.getAverageBidBank(),
+        totalBids       : placedBids.length,
+        canIBid         : true,
+        currentBidUser  : {name: bidContainer.getLastBidUserName()}
+    }
+
+	return {};
 }
 
 Jackpot.prototype.showConsoleInfoEverySecond = function()
 {
-	console.log(this.title, this.timeclockContainer.getClock('game').remaining, this.timeclockContainer.getClock('doomsday').remaining);
+	console.log(this.title, this.getClockRemaining('game'), this.getClockRemaining('doomsday'));
 }
 
 export default Jackpot;

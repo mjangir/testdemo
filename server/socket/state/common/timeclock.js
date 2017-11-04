@@ -1,5 +1,7 @@
 'use strict';
 
+import { convertSecondsToCounterTime } from '../../../utils/functions';
+
 function Timeclock(data)
 {
     this.clockName  = data.clockName;
@@ -17,6 +19,18 @@ Timeclock.prototype.runEveryXSecond = function(second, callback)
         callback    : callback,
         lastCalled  : 0
     })
+}
+
+Timeclock.prototype.increaseBy = function(second)
+{
+    if(this.remaining + second >= this.duration)
+    {
+        this.remaining = this.duration;
+    }
+    else
+    {
+        this.remaining += second;
+    }
 }
 
 Timeclock.prototype.countDown = function()
@@ -47,6 +61,20 @@ Timeclock.prototype.callEveryXSecondCallbacks = function()
             }
         }
     }
+}
+
+Timeclock.prototype.getFormattedRemaining = function()
+{
+    var time    = this.remaining,
+        t       = convertSecondsToCounterTime(time),
+        str     = t.hours + ':' + t.minutes + ':' + t.seconds;
+
+    if(t.days > 0)
+    {
+        return t.days + ':' + str;
+    }
+
+    return str;
 }
 
 export default Timeclock;

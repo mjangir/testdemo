@@ -24,7 +24,7 @@ function getCurrentJackpotByUserId(userId)
    	{
      	jackpotUser = jackpots[k].getUserById(userId);
 
-     	if(jackpotUser !== false && !jackpotUser.isQuitted() && jackpots[k].gameStatus == 'STARTED')
+     	if(jackpotUser !== false && !jackpotUser.isQuitted() && jackpots[k].isStarted())
      	{
      		returnjp = jackpots[k];
      	}
@@ -53,7 +53,7 @@ function getNewJackpotByUserId(currentJackpot, userId)
 	{
 		for(var k in jackpots)
 	   	{
-	     	if(jackpots[k].gameStatus == 'STARTED' && jackpots[k].timeclockContainer.getClock('doomsday').remaining > 0)
+	     	if(jackpots[k].isStarted() && jackpots[k].getClockRemaining('doomsday') > 0)
 	     	{
 	     		finalJackpot = jackpots[k];
 	     		break;
@@ -66,7 +66,7 @@ function getNewJackpotByUserId(currentJackpot, userId)
 	{
 		for(var j in jackpots)
 	   	{
-	   		if(jackpots[j].gameStatus == 'NOT_STARTED')
+	   		if(jackpots[j].isNotStarted())
 	     	{
 	     		finalJackpot = jackpots[j];
 	     		break;

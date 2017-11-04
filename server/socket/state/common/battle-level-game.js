@@ -2,12 +2,19 @@
 
 import BidContainer from './bid-container';
 
-function BattleLevelGame()
+function BattleLevelGame(level)
 {
-    this.bidContainer = new BidContainer();
+	this.level 			= level;
+	this.users 			= [];
+    this.bidContainer 	= new BidContainer();
 }
 
 BattleLevelGame.prototype.placeBid = function()
+{
+
+}
+
+BattleLevelGame.prototype.increaseClockOnNewBid = function()
 {
 
 }

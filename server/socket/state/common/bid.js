@@ -46,3 +46,5 @@ Bid.prototype.updateDuration = function()
 	this.endTime 	= new Date();
 	this.duration 	= moment(this.endTime).diff(moment(this.startTime), "seconds");
 }
+
+export default Bid;

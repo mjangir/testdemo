@@ -1,16 +1,18 @@
 'use strict';
 
 import Bid from './bid';
-import { getUserObjectById } from '../../../utils/functions';
+import { getUserObjectById, convertSecondsToCounterTime } from '../../../utils/functions';
+import _ from 'lodash';
 
 /**
  * Constructor
  *
  * @return {*}
  */
-function BidContainer()
+function BidContainer(parent)
 {
-	this.bids = [];
+	this.parent = parent;
+	this.bids 	= [];
 }
 
 /**
@@ -18,16 +20,39 @@ function BidContainer()
  *
  * @return {Bid}
  */
-BidContainer.prototype.placeBid = function(userId)
+BidContainer.prototype.placeBid = function(userId, socket, callback)
 {
 	var bid 	= new Bid(userId),
 		lastBid = this.getLastBid();
 
-	lastBid.updateDuration();
+	if(lastBid != null)
+	{
+		lastBid.updateDuration();
+	}
 
 	this.bids.push(bid);
 
-	return bid;
+	if(typeof callback == 'function')
+	{
+		callback.call(this, this, this.parent, socket, bid);
+	}
+	else
+	{
+		return bid;
+	}
+}
+
+BidContainer.prototype.getAllBids = function(userId)
+{
+	if(typeof userId != 'undefined')
+	{
+		return _.filter(this.bids, function(o)
+		{ 
+		    return o.userId == userId; 
+		});
+	}
+
+	return this.bids;
 }
 
 /**
@@ -35,10 +60,15 @@ BidContainer.prototype.placeBid = function(userId)
  *
  * @return {Bid|null}
  */
-BidContainer.prototype.getLongestBid = function()
+BidContainer.prototype.getLongestBid = function(userId)
 {
-	var bids       = this.bids,
+	var bids       = typeof userId != 'undefined' ? this.getAllBids(userId) : this.bids,
         longestBid;
+
+    if(!Array.isArray(bids))
+    {
+    	return null;
+    }
 
     if(bids.length <= 0)
     {
@@ -49,10 +79,10 @@ BidContainer.prototype.getLongestBid = function()
         return bids[0];
     }
 
-    longestBid = bids.reduce(function(l, e)
-    {
-      return e.getDuration() > l.getDuration ? e : l;
-    });
+    longestBid = _.max(bids, function(object)
+	{
+		return object.getDuration();
+	});
 
     return longestBid;
 }
@@ -62,11 +92,29 @@ BidContainer.prototype.getLongestBid = function()
  *
  * @return {Integer|null}
  */
-BidContainer.prototype.getLongestBidDuration = function()
+BidContainer.prototype.getLongestBidDuration = function(formatted)
+{
+	var longestBid 	= this.getLongestBid(),
+		duration 	= longestBid != null ? longestBid.getDuration() : null;
+
+	if(typeof formatted != 'undefined' && formatted == true && duration != null)
+	{
+		return this.formattedClockTime(duration);
+	}
+
+	return duration;
+}
+
+/**
+ * Get longest bid user name
+ *
+ * @return {String|null}
+ */
+BidContainer.prototype.getLongestBidUser = function()
 {
 	var longestBid = this.getLongestBid();
 
-	return longestBid != null ? longestBid.getDuration() : null;
+	return longestBid == null ? null : getUserObjectById(longestBid.userId);
 }
 
 /**
@@ -76,9 +124,9 @@ BidContainer.prototype.getLongestBidDuration = function()
  */
 BidContainer.prototype.getLongestBidUserName = function()
 {
-	var longestBid = this.getLongestBid();
+	var user = this.getLongestBidUser();
 
-	return longestBid == null ? null : getUserObjectById(longestBid.userId);
+	return user == null ? null : user.name;
 }
 
 /**
@@ -86,7 +134,7 @@ BidContainer.prototype.getLongestBidUserName = function()
  *
  * @return {Integer|null}
  */
-BidContainer.prototype.getLongestBidUserName = function()
+BidContainer.prototype.getLongestBidUserId = function()
 {
 	var longestBid = this.getLongestBid();
 
@@ -108,11 +156,29 @@ BidContainer.prototype.getLastBid = function()
  *
  * @return {Integer|null}
  */
-BidContainer.prototype.getLastBidDuration = function()
+BidContainer.prototype.getLastBidDuration = function(formatted)
+{
+	var lastBid 	= this.getLastBid(),
+		duration 	= lastBid != null ? lastBid.getDuration() : null;
+
+	if(typeof formatted != 'undefined' && formatted == true && duration != null)
+	{
+		return this.formattedClockTime(duration);
+	}
+
+	return duration;
+}
+
+/**
+ * Get last bid user name
+ *
+ * @return {String|null}
+ */
+BidContainer.prototype.getLastBidUser = function()
 {
 	var lastBid = this.getLastBid();
 
-	return lastBid != null ? lastBid.getDuration() : null;
+	return lastBid == null ? null : getUserObjectById(lastBid.userId);
 }
 
 /**
@@ -122,9 +188,9 @@ BidContainer.prototype.getLastBidDuration = function()
  */
 BidContainer.prototype.getLastBidUserName = function()
 {
-	var lastBid = this.getLastBid();
+	var user = this.getLastBidUser();
 
-	return lastBid == null ? null : getUserObjectById(lastBid.userId);
+	return user == null ? null : user.name;
 }
 
 /**
@@ -147,6 +213,39 @@ BidContainer.prototype.getLastBidUserId = function()
 BidContainer.prototype.isLongestAndLastBidUserSame = function()
 {
 	return this.getLastBidUserId() == this.getLongestBidUserId();
+}
+
+BidContainer.prototype.getTotalBidsCountByUserId = function(userId)
+{
+	var allUserBids 	= this.getAllBids(userId),
+		totalBidCount 	= Array.isArray(allUserBids) ? allUserBids.length : 0;
+	return totalBidCount;
+}
+
+BidContainer.prototype.getLongestBidDurationByUserId = function(userId, formatted)
+{
+	var longestBid 	= this.getLongestBid(userId),
+		duration 	= longestBid != null ? longestBid.getDuration() : null;
+
+	if(typeof formatted != 'undefined' && formatted == true && duration != null)
+	{
+		return this.formattedClockTime(duration);
+	}
+
+	return duration;
+}
+
+BidContainer.prototype.formattedClockTime = function(time)
+{
+	var t 	= convertSecondsToCounterTime(time),
+		str = t.hours + ':' + t.minutes + ':' + t.seconds;
+
+	if(t.days > 0)
+	{
+		return t.days + ':' + str;
+	}
+
+	return str;
 }
 
 export default BidContainer;

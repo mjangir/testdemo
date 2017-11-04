@@ -106,3 +106,35 @@ export const getUserObjectById = function(userId)
 
   return false;
 }
+
+export const convertSecondsToCounterTime = function(seconds)
+{
+  var days                = Math.floor(seconds/24/60/60),
+      hoursLeft           = Math.floor((seconds) - (days*86400)),
+      hours               = Math.floor(hoursLeft/3600),
+      minutesLeft         = Math.floor((hoursLeft) - (hours*3600)),
+      minutes             = Math.floor(minutesLeft/60),
+      remainingSeconds    = seconds % 60;
+
+  if(hours < 10)
+  {
+      hours = "0" + hours;
+  }
+
+  if(minutes < 10)
+  {
+      minutes = "0" + minutes;
+  }
+
+  if(remainingSeconds < 10)
+  {
+      remainingSeconds = "0" + remainingSeconds;
+  }
+
+  return {
+      days: days,
+    hours: hours,
+    minutes: minutes,
+    seconds: remainingSeconds
+  };
+}

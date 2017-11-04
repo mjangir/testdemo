@@ -2,9 +2,9 @@
 
 import BattleLevelGame from '../common/battle-level-game';
 
-function Game(data)
+function Game(level)
 {
-    BattleLevelGame.call(this);
+    BattleLevelGame.call(this, level);
 }
 
 Game.prototype = Object.create(BattleLevelGame.prototype);

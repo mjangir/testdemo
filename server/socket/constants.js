@@ -15,6 +15,10 @@ export const EVT_EMIT_JACKPOT_ME_JOINED             = 'me_joined';
 export const EVT_EMIT_JACKPOT_UPDATE_AMOUNT 		= 'update_jackpot_amount';
 export const EVT_EMIT_JACKPOT_SHOW_QUIT_BUTTON      = 'show_quit_button';
 export const EVT_EMIT_JACKPOT_GAME_QUITTED    		= 'game_quitted';
+export const EVT_EMIT_JACKPOT_MY_BID_PLACED         = 'my_bid_placed';
+export const EVT_EMIT_JACKPOT_PLACE_BID_ERROR 		= 'place_bid_error';
+export const EVT_EMIT_JACKPOT_UPDATES_TO_ITS_ROOM   = 'updated_jackpot_data';
+export const EVT_EMIT_JACKPOT_UPDATE_TIMER  		= 'update_jackpot_timer';
 
 
 // Jackpot Normal Battle Specific Constants

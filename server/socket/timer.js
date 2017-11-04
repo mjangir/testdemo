@@ -21,7 +21,7 @@ function processJackpots()
             jackpot = jackpots[k];
 
             // If jackpot is not started or finished, do nothing
-            if(jackpot.gameStatus == 'NOT_STARTED' || jackpot.gameStatus == 'FINISHED')
+            if(jackpot.isNotStarted() || jackpot.isFinished())
             {
                 continue;
             }
