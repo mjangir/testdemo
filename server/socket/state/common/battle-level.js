@@ -50,6 +50,19 @@ BattleLevel.prototype.getAvailableGameSlot = function()
 	return false;
 }
 
+BattleLevel.prototype.updateTimerEverySecond = function()
+{
+	var games = this.games;
+
+	if(games.length > 0)
+	{
+		for(var k in games)
+		{
+			games[k].updateTimerEverySecond();
+		}
+	}
+}
+
 BattleLevel.prototype.finishGameEverySecond = function()
 {
 

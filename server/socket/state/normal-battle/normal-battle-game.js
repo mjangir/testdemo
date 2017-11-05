@@ -6,7 +6,12 @@ import { getUserObjectById } from '../../../utils/functions';
 import url from 'url';
 import config from '../../../config/environment';
 import {
-	EVT_EMIT_NORMAL_BATTLE_UPDATE_PLAYERS
+	EVT_EMIT_NORMAL_BATTLE_UPDATE_PLAYERS,
+	EVT_EMIT_NORMAL_BATTLE_GAME_STARTED,
+	EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID,
+	EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID,
+	EVT_EMIT_NORMAL_BATTLE_GAME_ABOUT_TO_START,
+	EVT_EMIT_NORMAL_BATTLE_TIMER
 } from '../../constants';
 
 const avatarUrl = url.format({
@@ -62,6 +67,60 @@ NormalBattleGame.prototype.emitUpdatesToItsRoom = function(socket)
 		sendTo 	= typeof socket != 'undefined' ? socket.broadcast : global.ticktockGameState.jackpotSocketNs;
 
 	sendTo.in(room).emit(EVT_EMIT_NORMAL_BATTLE_UPDATE_PLAYERS, {players: players});
+}
+
+NormalBattleGame.prototype.startGame = function()
+{
+    var minPlayers = this.level.minPlayersRequired;
+
+    if(!this.isStarted() && this.getAllUsers().length >= minPlayers)
+    {
+        var socketNs 	= global.ticktockGameState.jackpotSocketNs,
+        	room 		= this.getRoomName(),
+        	context 	= this,
+	        time    	= 10 * 1000,
+	        i       	= 1000,
+	        countdn 	= time,
+	        interval;
+
+	    interval = (function(i, time, context)
+	    {
+	        return setInterval(function()
+	        {
+	            if(i > time)
+	            {
+	                context.gameStatus = 'STARTED';
+	                socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_GAME_STARTED, {status: true});
+	                socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID, {status: true});
+	                clearInterval(interval);
+	            }
+	            else
+	            {
+	            	socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID, {status: true});
+	                socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_GAME_ABOUT_TO_START, {time: parseInt(countdn/1000, 10)});
+	                countdn -= 1000;
+	            }
+
+	            i += 1000;
+
+	        }, i);
+
+	    }(i, time, context));
+    }
+}
+
+NormalBattleGame.prototype.updateTimerEverySecond = function()
+{
+	var room 	= this.getRoomName(),
+		ns 		= global.ticktockGameState.jackpotSocketNs;
+
+    ns.in(room).emit(EVT_EMIT_NORMAL_BATTLE_TIMER, {
+        battleClock         : this.getClock('game').getFormattedRemaining(),
+        currentBidDuration  : this.bidContainer.getLastBidDuration(),
+        currentBidUserName  : this.bidContainer.getLastBidUserName(),
+        longestBidDuration  : this.bidContainer.getLongestBidDuration(),
+        longestBidUserName  : this.bidContainer.getLongestBidUserName()
+    });
 }
 
 

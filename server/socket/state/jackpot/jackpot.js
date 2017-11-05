@@ -292,7 +292,21 @@ Jackpot.prototype.emitJackpotInfoEverySecond = function()
 
 Jackpot.prototype.emitBattlesInfoEverySecond = function()
 {
+	if(this.normalBattleLevels.length > 0)
+	{
+		for(var i in this.normalBattleLevels)
+		{
+			this.normalBattleLevels[i].updateTimerEverySecond();
+		}
+	}
 
+	if(this.advanceBattleLevels.length > 0)
+	{
+		for(var k in this.advanceBattleLevels)
+		{
+			this.advanceBattleLevels[k].updateTimerEverySecond();
+		}
+	}
 }
 
 Jackpot.prototype.emitShowQuitButton = function()

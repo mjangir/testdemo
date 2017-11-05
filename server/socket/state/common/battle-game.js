@@ -6,12 +6,6 @@ import JackpotUser from '../jackpot/jackpot-user';
 import NormalBattleLevel from '../normal-battle/normal-battle-level';
 import AdvanceBattleLevel from '../advance-battle/advance-battle-level';
 import _ from 'lodash';
-import {
-	EVT_EMIT_NORMAL_BATTLE_GAME_STARTED,
-	EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID,
-	EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID,
-	EVT_EMIT_NORMAL_BATTLE_GAME_ABOUT_TO_START
-} from '../../constants';
 
 function BattleGame(level)
 {
@@ -123,44 +117,12 @@ BattleGame.prototype.getUser = function(user)
 	return _.find(this.users, {userId: userId});
 }
 
-BattleGame.prototype.startGame = function()
+BattleGame.prototype.countDown = function()
 {
-    var minPlayers = this.level.minPlayersRequired;
-
-    if(!this.isStarted() && this.getAllUsers().length >= minPlayers)
-    {
-        var socketNs 	= global.ticktockGameState.jackpotSocketNs,
-        	room 		= this.getRoomName(),
-        	context 	= this,
-	        time    	= 10 * 1000,
-	        i       	= 1000,
-	        countdn 	= time,
-	        interval;
-
-	    interval = (function(i, time, context)
-	    {
-	        return setInterval(function()
-	        {
-	            if(i > time)
-	            {
-	                context.gameStatus = 'STARTED';
-	                socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_GAME_STARTED, {status: true});
-	                socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID, {status: true});
-	                clearInterval(interval);
-	            }
-	            else
-	            {
-	            	socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID, {status: true});
-	                socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_GAME_ABOUT_TO_START, {time: parseInt(countdn/1000, 10)});
-	                countdn -= 1000;
-	            }
-
-	            i += 1000;
-
-	        }, i);
-
-	    }(i, time, context));
-    }
+	if(this.isStarted())
+	{
+		this.timeclockContainer.countDown();
+	}
 }
 
 export default BattleGame;
