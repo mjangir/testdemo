@@ -2,8 +2,11 @@
 
 import { 
 	EVT_EMIT_JACKPOT_CAN_I_BID,
-	EVT_EMIT_JACKPOT_ME_JOINED,
-	EVT_EMIT_JACKPOT_MY_BID_PLACED
+	EVT_EMIT_JACKPOT_GAME_JOINED,
+	EVT_EMIT_JACKPOT_BID_PLACED,
+	EVT_EMIT_NORMAL_BATTLE_JOINED,
+	EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID,
+	EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID
 } from '../../constants';
 
 import { 
@@ -12,8 +15,8 @@ import {
 } from '../../../utils/functions';
 
 import Jackpot from './jackpot';
-import NormalBattleLGame from '../normal-battle/game';
-import AdvanceBattleLGame from '../advance-battle/game';
+import NormalBattleLGame from '../normal-battle/normal-battle-game';
+import AdvanceBattleLGame from '../advance-battle/advance-battle-game';
 import _ from 'lodash';
 
 function JackpotUser(jackpot, userId)
@@ -34,8 +37,8 @@ function JackpotUser(jackpot, userId)
 
 	this.placedBids = {
 		'jackpot' 		: [],
-		'normalBattle' 	: [],
-		'advanceBattle' : []
+		'normalBattle' 	: {},
+		'advanceBattle' : {}
 	};
 
 	this.battleWins = {
@@ -85,11 +88,11 @@ JackpotUser.prototype.emitMeJoined = function()
 		bidContainer= this.jackpot.bidContainer,
 		bidsByUser 	= bidContainer.getAllBids(this.userId);
 
-	socket.emit(EVT_EMIT_JACKPOT_ME_JOINED, {
+	socket.emit(EVT_EMIT_JACKPOT_GAME_JOINED, {
 	    jackpotInfo:    {
 	        uniqueId:    jackpot.uniqueId,
 	        name:        jackpot.title,
-	        amount:      convertAmountToCommaString(jackpot.JackpotAmount)
+	        amount:      convertAmountToCommaString(jackpot.jackpotAmount)
 	    },
 	    userInfo: {
 	        name:               userInfo.name,
@@ -119,6 +122,73 @@ JackpotUser.prototype.emitCanIBid = function()
 			canIBid: (lastBidUserId != this.userId)
 		});
 	}
+}
+
+JackpotUser.prototype.emitMeJoinedNormalBattle = function(socket, level, game, data)
+{
+	socket.emit(EVT_EMIT_NORMAL_BATTLE_JOINED, {
+        jackpotInfo:    {
+            uniqueId:    this.jackpot.uniqueId,
+            name:        this.jackpot.title,
+            amount:      convertAmountToCommaString(this.jackpot.jackpotAmount)
+        },
+        levelInfo: {
+            uniqueId    : level.uniqueId,
+            levelName   : level.levelName,
+            prizeValue  : level.prizeBids,
+            prizeType   : 'BID'
+        },
+        myInfo: {
+            userId 			: this.userId,
+            name 			: getUserObjectById(this.userId).name,
+            availableBids 	: this.getNormalBattleAvailableBids(level, game),
+            totalPlacedBids : this.getNormalBattlePlacedBids(level, game).length
+        },
+        gameInfo: {
+            duration : game.getClock('game').getFormattedRemaining(),
+            uniqueId : game.uniqueId
+        },
+        players             : game.getAllPlayersList(),
+        currentBidDuration 	: game.bidContainer.getLastBidDuration(true),
+        currentBidUser 		: game.bidContainer.getLastBidUserName(),
+        longestBidDuration 	: game.bidContainer.getLongestBidDuration(true),
+        longestBidUser  	: game.bidContainer.getLongestBidUserName()
+    });
+}
+
+JackpotUser.prototype.emitMyBattlePlaceBidButtonToggle = function(socket, level, game, data)
+{
+	var gameNotStarted 	= game.isNotStarted(),
+		lastBidUserId 	= game.bidContainer.getLastBidUserId();
+
+	if(gameNotStarted || (lastBidUserId != null && lastBidUserId == this.userId))
+	{
+		socket.emit(EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID);
+	}
+	else
+	{
+		socket.emit(EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID);
+	}
+}
+
+JackpotUser.prototype.getNormalBattleAvailableBids = function(level, game)
+{
+	return this.availableBids['normalBattle'][level.uniqueId][game.uniqueId];
+}
+
+JackpotUser.prototype.getNormalBattlePlacedBids = function(level, game)
+{
+	return this.placedBids['normalBattle'][level.uniqueId][game.uniqueId];
+}
+
+JackpotUser.prototype.getAdvanceBattleAvailableBids = function(level, game)
+{
+	return this.availableBids['advanceBattle'][level.uniqueId][game.uniqueId];
+}
+
+JackpotUser.prototype.getAdvanceBattlePlacedBids = function(level, game)
+{
+	return this.placedBids['advanceBattle'][level.uniqueId][game.uniqueId];
 }
 
 
@@ -162,7 +232,7 @@ JackpotUser.prototype.afterPlacedJackpotBid = function(bidContainer, parent, soc
 		this.availableBids['jackpot'] -= 1;
 	}
 
-    socket.emit(EVT_EMIT_JACKPOT_MY_BID_PLACED, {
+    socket.emit(EVT_EMIT_JACKPOT_BID_PLACED, {
         availableBids:          this.availableBids['jackpot'],
         totalPlacedBids:        bidContainer.getTotalBidsCountByUserId(bid.userId),
         myLongestBidDuration:   bidContainer.getLongestBidDurationByUserId(bid.userId)
@@ -183,8 +253,20 @@ JackpotUser.prototype.afterPlacedAdvanceBattleBid = function(game, bid, socket)
 	this.afterPlacedBattleBid(game, bid, socket, this.placedBids['advanceBattle']);
 }
 
-JackpotUser.prototype.afterPlacedBattleBid = function(game, bid, socket, battleBids)
+JackpotUser.prototype.afterPlacedBattleBid = function(game, bid, socket, placeBids)
 {
+	var level 			= game.level,
+		levelUniqueId 	= level.uniqueId,
+		gameUniqueId 	= game.uniqueId,
+		availableBids 	= this.getNormalBattleAvailableBids(level, game);
+
+	placeBids[levelUniqueId][gameUniqueId].push(bid);
+
+	if(availableBids > 0)
+	{
+		availableBids -= 1;
+	}
+
 	// var normalBattleBids 	= this.placedBids[battleType],
 	// 	battleLevel 		= game.level;
 

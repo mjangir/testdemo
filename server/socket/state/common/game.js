@@ -27,7 +27,7 @@ Game.prototype.isFinished = function()
 
 Game.prototype.getRoomName = function()
 {
-	return 'SOCKET_ROOM_' + this.uniqueId;
+	return this.roomPrefix + '_' + this.uniqueId;
 }
 
 Game.prototype.getClock = function(clockName)

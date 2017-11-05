@@ -23,7 +23,7 @@ function Jackpot(data)
 {
 	this.id 						= data.id,
 	this.title 						= data.title;
-	this.JackpotAmount 				= data.amount;
+	this.jackpotAmount 				= data.amount;
 	this.minPlayersRequired 		= data.minPlayersRequired;
 	this.gameClockDuration 			= data.gameClockTime;
 	this.doomsdayClockDuration 		= data.doomsDayTime;
@@ -35,6 +35,7 @@ function Jackpot(data)
 	this.uniqueId 					= data.uniqueId;
 	this.isActive 					= data.status == 'ACTIVE' ? true : false;
 	this.startedOn 					= null;
+	this.roomPrefix 				= 'JACKPOT_SOCKET_ROOM';
 
 	this.users 						= [];
 	this.normalBattleLevels 		= [];
@@ -118,14 +119,14 @@ Jackpot.prototype.setTimeclocks = function(data)
 
 Jackpot.prototype.updateJackpotAmount = function(elapsed)
 {
-	this.JackpotAmount = Number(parseFloat(this.JackpotAmount, 10) + parseFloat(this.increaseAmount, 10)).toFixed(2);
+	this.jackpotAmount = Number(parseFloat(this.jackpotAmount, 10) + parseFloat(this.increaseAmount, 10)).toFixed(2);
 	this.sendUpdatedAmountToJackpotSockets();
 	this.sendUpdatedAmountToBattleSockets();
 }
 
 Jackpot.prototype.sendUpdatedAmountToJackpotSockets = function()
 {
-	var amount = convertAmountToCommaString(this.JackpotAmount);
+	var amount = convertAmountToCommaString(this.jackpotAmount);
 
 	global.ticktockGameState.jackpotSocketNs.in(this.getRoomName()).emit(EVT_EMIT_JACKPOT_UPDATE_AMOUNT, {amount: amount});
 }
@@ -207,14 +208,24 @@ Jackpot.prototype.addBattleLevels = function(data)
 		{
 			if(levels[k].battleType == 'NORMAL')
 			{
-				this.normalBattleLevels.push(new NormalBattleLevel(levels[k]));
+				this.normalBattleLevels.push(new NormalBattleLevel(this, levels[k]));
 			}
 			else if(levels[k].battleType == 'GAMBLING')
 			{
-				this.advanceBattleLevels.push(new AdvanceBattleLevel(levels[k]));
+				this.advanceBattleLevels.push(new AdvanceBattleLevel(this, levels[k]));
 			}
 		}
 	}
+}
+
+Jackpot.prototype.getNormalBattleLevelById = function(uniqueId)
+{
+	return _.find(this.normalBattleLevels, {uniqueId: uniqueId});
+}
+
+Jackpot.prototype.getAdvanceBattleLevelById = function(uniqueId)
+{
+	return _.find(this.advanceBattleLevels, {uniqueId: uniqueId});
 }
 
 Jackpot.prototype.getNormalBattleLevels = function()

@@ -1,11 +1,13 @@
 'use strict'
 
 import BattleLevel from '../common/battle-level';
+import NormalBattleGame from './normal-battle-game';
+import JackpotUser from '../jackpot/jackpot-user';
 import {generateRandomString} from '../../../utils/functions';
 
-function NormalBattleLevel(data)
+function NormalBattleLevel(jackpot, data)
 {
-	this.id 						= data.id,
+	this.id 						= data.id;
 	this.order 						= data.order;
 	this.levelName 					= data.levelName;
 	this.duration 					= data.duration;
@@ -18,9 +20,10 @@ function NormalBattleLevel(data)
 	this.minPlayersRequired 		= data.minPlayersRequiredToStart;
 	this.minWinsToUnlockNext 		= data.minWinsToUnlockNextLevel;
 	this.isLastLevel 				= data.isLastLevel;
-	this.uniqueId 					= generateRandomString(20, 'aA');
 
 	this.games 						= [];
+
+	BattleLevel.call(this, data);
 }
 
 NormalBattleLevel.prototype = Object.create(BattleLevel.prototype);
@@ -31,6 +34,15 @@ NormalBattleLevel.prototype.isLockedForUser = function(previousLevel, user)
 		totalWinnings 		= user.getNormalBattleTotalWinnings(previousLevel);
 
 	return totalWinnings < minWinsToUnlockNext;
+}
+
+NormalBattleLevel.prototype.createNewGame = function()
+{
+	var game = new NormalBattleGame(this);
+
+	this.games.push(game);
+
+	return game;
 }
 
 export default NormalBattleLevel;

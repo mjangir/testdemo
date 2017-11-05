@@ -18,8 +18,10 @@ function AdvanceBattleLevel(data)
 	this.minWinsToUnlockNext 		= data.minWinsToUnlockNextLevel;
 
 	this.games 						= [];
+
+	BattleLevel.call(this, data);
 }
 
-AdvanceBattleLevel.prototype = Object.create(BattleLevel.prototype);
+//AdvanceBattleLevel.prototype = Object.create(BattleLevel.prototype);
 
 export default AdvanceBattleLevel;
