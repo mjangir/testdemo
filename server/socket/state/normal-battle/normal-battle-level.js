@@ -1,6 +1,7 @@
 'use strict'
 
 import BattleLevel from '../common/battle-level';
+import {generateRandomString} from '../../../utils/functions';
 
 function NormalBattleLevel(data)
 {
@@ -16,10 +17,20 @@ function NormalBattleLevel(data)
 	this.longestBidWinnerPercent 	= data.longestBidWinnerPercent;
 	this.minPlayersRequired 		= data.minPlayersRequiredToStart;
 	this.minWinsToUnlockNext 		= data.minWinsToUnlockNextLevel;
+	this.isLastLevel 				= data.isLastLevel;
+	this.uniqueId 					= generateRandomString(20, 'aA');
 
 	this.games 						= [];
 }
 
 NormalBattleLevel.prototype = Object.create(BattleLevel.prototype);
+
+NormalBattleLevel.prototype.isLockedForUser = function(previousLevel, user)
+{
+	var minWinsToUnlockNext = previousLevel.minWinsToUnlockNext,
+		totalWinnings 		= user.getNormalBattleTotalWinnings(previousLevel);
+
+	return totalWinnings < minWinsToUnlockNext;
+}
 
 export default NormalBattleLevel;

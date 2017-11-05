@@ -33,7 +33,7 @@ function processJackpots()
             }
 
             // Count down jackpot timer
-            jackpot.countDownJackpotTimer();
+            jackpot.countDown();
 
             // Count down jackpot battles timer
             jackpot.countDownBattlesTimer();
@@ -57,7 +57,7 @@ function processJackpots()
             jackpot.finishBattlesEverySecond();
 
             // Temporary
-            jackpot.showConsoleInfoEverySecond();
+            //jackpot.showConsoleInfoEverySecond();
         }
     }
 }

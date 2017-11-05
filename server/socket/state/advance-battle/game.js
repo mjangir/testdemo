@@ -1,12 +1,12 @@
 'use strict'
 
-import BattleLevelGame from '../common/battle-level-game';
+import CommonGame from '../common/game';
 
 function Game(level)
 {
-    BattleLevelGame.call(this, level);
+    CommonGame.call(this, level);
 }
 
-Game.prototype = Object.create(BattleLevelGame.prototype);
+Game.prototype = Object.create(CommonGame.prototype);
 
 export default Game;

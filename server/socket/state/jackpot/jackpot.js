@@ -5,6 +5,7 @@ import AdvanceBattleLevel from '../advance-battle/advance-battle-level';
 import TimeclockContainer from '../common/timeclock-container';
 import JackpotUser from './jackpot-user';
 import BidContainer from '../common/bid-container';
+import Game from '../common/game';
 import sqldb from '../../../sqldb';
 import _ from 'lodash';
 import { getUserObjectById, convertAmountToCommaString } from '../../../utils/functions';
@@ -38,47 +39,19 @@ function Jackpot(data)
 	this.users 						= [];
 	this.normalBattleLevels 		= [];
 	this.advanceBattleLevels 		= [];
-	this.bidContainer 				= new BidContainer(this);
-	this.timeclockContainer 		= new TimeclockContainer(this);
+
+	Game.call(this, data);
 
 	// Add Battle Levels
 	this.addBattleLevels(data);
 	this.setTimeclocks(data);
 }
 
-Jackpot.prototype.isStarted = function()
-{
-	return this.gameStatus == 'STARTED';
-}
+Jackpot.prototype = Object.create(Game.prototype);
 
-Jackpot.prototype.isNotStarted = function()
+Jackpot.prototype.isDoomsDayOver = function()
 {
-	return this.gameStatus == 'NOT_STARTED';
-}
-
-Jackpot.prototype.isFinished = function()
-{
-	return this.gameStatus == 'FINISHED';
-}
-
-Jackpot.prototype.getRoomName = function()
-{
-	return 'JACKPOT_ROOM_' + this.uniqueId;
-}
-
-Jackpot.prototype.getClockRemaining = function(clockName)
-{
-	return this.timeclockContainer.getClock(clockName).remaining;
-}
-
-Jackpot.prototype.getClockElapsed = function(clockName)
-{
-	return this.timeclockContainer.getClock(clockName).elapsed;
-}
-
-Jackpot.prototype.getClock = function(clockName)
-{
-	return this.timeclockContainer.getClock(clockName);
+	return this.getClock('doomsday').remaining == 0;
 }
 
 Jackpot.prototype.placeBid = function(userId, socket)
@@ -232,11 +205,11 @@ Jackpot.prototype.addBattleLevels = function(data)
 
 		for(var k in levels)
 		{
-			if(levels.battleType == 'NORMAL')
+			if(levels[k].battleType == 'NORMAL')
 			{
 				this.normalBattleLevels.push(new NormalBattleLevel(levels[k]));
 			}
-			else if(levels.battleType == 'GAMBLING')
+			else if(levels[k].battleType == 'GAMBLING')
 			{
 				this.advanceBattleLevels.push(new AdvanceBattleLevel(levels[k]));
 			}
@@ -244,9 +217,14 @@ Jackpot.prototype.addBattleLevels = function(data)
 	}
 }
 
-Jackpot.prototype.countDownJackpotTimer = function()
+Jackpot.prototype.getNormalBattleLevels = function()
 {
-	this.timeclockContainer.countDown();
+	return _.sortBy(this.normalBattleLevels, 'order');
+}
+
+Jackpot.prototype.getAdvanceBattleLevels = function()
+{
+	return _.sortBy(this.advanceBattleLevels, 'order');
 }
 
 Jackpot.prototype.countDownBattlesTimer = function()
@@ -386,11 +364,6 @@ Jackpot.prototype.getUpdatedJackpotData = function()
         totalBids       : placedBids.length,
         currentBidUser  : {name: bidContainer.getLastBidUserName()}
     };
-}
-
-Jackpot.prototype.showConsoleInfoEverySecond = function()
-{
-	//console.log(this.title, this.getClockRemaining('game'), this.getClockRemaining('doomsday'));
 }
 
 export default Jackpot;

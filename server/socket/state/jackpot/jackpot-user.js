@@ -14,6 +14,7 @@ import {
 import Jackpot from './jackpot';
 import NormalBattleLGame from '../normal-battle/game';
 import AdvanceBattleLGame from '../advance-battle/game';
+import _ from 'lodash';
 
 function JackpotUser(jackpot, userId)
 {
@@ -24,13 +25,20 @@ function JackpotUser(jackpot, userId)
 	this.normalBattleWinsCount 	= 0;
 	this.advanceBattleWinsCount = 0;
 	this.userGameStatus 		= 'PLAYING';
-	this.availableBids 			= {
+
+	this.availableBids = {
 		'jackpot' 		: 0,
 		'normalBattle' 	: {},
 		'advanceBattle' : {}
 	};
-	this.placedBids 			= {
+
+	this.placedBids = {
 		'jackpot' 		: [],
+		'normalBattle' 	: [],
+		'advanceBattle' : []
+	};
+
+	this.battleWins = {
 		'normalBattle' 	: [],
 		'advanceBattle' : []
 	};
@@ -185,6 +193,18 @@ JackpotUser.prototype.afterPlacedBattleBid = function(game, bid, socket, battleB
 	// 	order	: battleLevel.order,
 	// 	bid 	: bid
 	// });
+}
+
+JackpotUser.prototype.getNormalBattleTotalWinnings = function(level)
+{
+	var allWins 	= this.battleWins['normalBattle'],
+		uniqueId 	= level.uniqueId,
+		levelWins 	= _.filter(allWins, function(o)
+		{ 
+		    return o.levelUniqueId == uniqueId; 
+		});
+
+	return levelWins.length;
 }
 
 export default JackpotUser;

@@ -1,8 +1,8 @@
 'use strict';
 
-function BattleLevel()
+function BattleLevel(data)
 {
-
+	this.games = [];
 }
 
 BattleLevel.prototype.countDown = function()
@@ -14,6 +14,11 @@ BattleLevel.prototype.countDown = function()
 			this.games[k].countDown();
 		}
 	}
+}
+
+BattleLevel.prototype.finishGameEverySecond = function()
+{
+
 }
 
 export default BattleLevel;
