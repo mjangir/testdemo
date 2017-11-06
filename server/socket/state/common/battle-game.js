@@ -117,18 +117,22 @@ BattleGame.prototype.placeBid = function(userId, socket)
 
 BattleGame.prototype.afterUserPlacedBid = function(bidContainer, parent, socket, bid)
 {
-    var level 		= parent.level,
-    	jackpot 	= level.jackpot,
-    	secondKey 	= 'incrementSecondsOnBid',
-		user 		= jackpot.getUserById(bid.userId),
-		seconds 	= level.hasOwnProperty(secondKey) && level[secondKey] != "" ? parseInt(level[secondKey], 10) : 10;
+    var jackpot = parent.level.jackpot,
+		user 	= jackpot.getUserById(bid.userId);
 
     if(user instanceof JackpotUser)
     {
         user.afterPlacedBid(bidContainer, parent, socket, bid);
+        this.increaseClockOnNewBid(level);
     }
+}
 
-    this.getClock('game').increaseBy(seconds);
+BattleGame.prototype.increaseClockOnNewBid = function(level)
+{
+	var secondKey 	= 'incrementSecondsOnBid',
+		seconds 	= level.hasOwnProperty(secondKey) && level[secondKey] != "" ? parseInt(level[secondKey], 10) : 10;
+
+	this.getClock('game').increaseBy(seconds);
 }
 
 export default BattleGame;

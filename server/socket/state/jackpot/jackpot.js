@@ -64,11 +64,10 @@ Jackpot.prototype.afterUserPlacedBid = function(bidContainer, parent, socket, bi
 {
     var user = this.getUserById(bid.userId);
 
-    if(user)
+    if(user instanceof JackpotUser)
     {
         user.afterPlacedBid(bidContainer, parent, socket, bid);
         parent.increaseClockOnNewBid();
-        socket.broadcast.in(this.getRoomName()).emit(EVT_EMIT_JACKPOT_CAN_I_BID, {canIBid: true});
     }
 }
 

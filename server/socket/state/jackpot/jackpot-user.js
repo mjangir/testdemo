@@ -415,6 +415,10 @@ JackpotUser.prototype.afterPlacedJackpotBid = function(bidContainer, parent, soc
     socket.emit(EVT_EMIT_JACKPOT_CAN_I_BID, {
         canIBid: false
     });
+
+    socket.broadcast.in(this.jackpot.getRoomName()).emit(EVT_EMIT_JACKPOT_CAN_I_BID, {
+        canIBid: true
+    });
 }
 
 JackpotUser.prototype.afterPlacedNormalBattleBid = function(bidContainer, game, socket, bid)
