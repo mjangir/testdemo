@@ -20,44 +20,11 @@ function processJackpots()
         {
             jackpot = jackpots[k];
 
-            // If jackpot is not started or finished, do nothing
-            if(jackpot.isNotStarted() || jackpot.isFinished())
-            {
-                // Send current jackpot bidding info to all sockets
-                jackpot.emitJackpotInfoEverySecond();
+            // Fire On Every Second For Jackpot
+            jackpot.fireForJackpotOnEverySecond();
 
-                // Send jackpot battle levels current bidding info
-                jackpot.emitBattlesInfoEverySecond();
-            
-                continue;
-            }
-
-            // Count down jackpot timer
-            jackpot.countDown();
-
-            // Count down jackpot battles timer
-            jackpot.countDownBattlesTimer();
-
-            // Send current jackpot bidding info to all sockets
-            jackpot.emitJackpotInfoEverySecond();
-
-            // Send jackpot battle levels current bidding info
-            jackpot.emitBattlesInfoEverySecond();
-
-            // Update jackpot amount on each second as per config
-            jackpot.emitJackpotAmountEverySecond();
-
-            // If game clock is running & doomsday is over, show quit button
-            jackpot.emitShowQuitButton();
-
-            // If game clock hits zero, finish the game. No further actions
-            jackpot.finishJackpotEverySecond();
-
-            // Check finish game for jackpot battles
-            jackpot.finishBattlesEverySecond();
-
-            // Temporary
-            //jackpot.showConsoleInfoEverySecond();
+            // Fire On Every Second For Battles
+            jackpot.fireForBattleOnEverySecond();
         }
     }
 }

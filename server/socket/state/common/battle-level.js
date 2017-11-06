@@ -16,17 +16,6 @@ BattleLevel.prototype.getAllGames = function()
 	return this.games;
 }
 
-BattleLevel.prototype.countDown = function()
-{
-	if(this.games.length > 0)
-	{
-		for(var k in this.games)
-		{
-			this.games[k].countDown();
-		}
-	}
-}
-
 BattleLevel.prototype.getAvailableGameSlot = function()
 {
 	var games = this.games,
@@ -50,22 +39,17 @@ BattleLevel.prototype.getAvailableGameSlot = function()
 	return false;
 }
 
-BattleLevel.prototype.updateTimerEverySecond = function()
+BattleLevel.prototype.fireOnEverySecond = function()
 {
-	var games = this.games;
-
-	if(games.length > 0)
+	if(this.games.length > 0)
 	{
-		for(var k in games)
+		for(var k in this.games)
 		{
-			games[k].updateTimerEverySecond();
+			this.games[k].countDown();
+			this.games[k].finishGame();
+			this.games[k].emitTimerUpdates();
 		}
 	}
-}
-
-BattleLevel.prototype.finishGameEverySecond = function()
-{
-
 }
 
 export default BattleLevel;

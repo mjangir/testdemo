@@ -1,6 +1,8 @@
 'use strict'
 
 import BattleGame from '../common/battle-game';
+import JackpotUser from '../jackpot/jackpot-user';
+import { getUserObjectById } from '../../../utils/functions';
 
 function AdvanceBattleGame(level)
 {
@@ -11,10 +13,5 @@ function AdvanceBattleGame(level)
 
 AdvanceBattleGame.prototype = Object.create(BattleGame.prototype);
 
-AdvanceBattleGame.prototype.addUser = function(user)
-{
-	this.users.push(user);
-	return this;
-}
 
 export default AdvanceBattleGame;

@@ -5,13 +5,15 @@ import CommonGame from './game';
 import JackpotUser from '../jackpot/jackpot-user';
 import NormalBattleLevel from '../normal-battle/normal-battle-level';
 import AdvanceBattleLevel from '../advance-battle/advance-battle-level';
+import NormalBattleLGame from '../normal-battle/normal-battle-game';
 import _ from 'lodash';
+import {
+	EVT_EMIT_NORMAL_BATTLE_TIMER
+} from '../../constants';
 
 function BattleGame(level)
 {
 	CommonGame.call(this, {gameStatus: 'NOT_STARTED'});
-
-	this.uniqueId 	= generateRandomString(20, 'aA');
 	this.level 		= level;
 	this.users 		= [];
 
@@ -28,64 +30,6 @@ BattleGame.prototype.setTimeclocks = function()
 	}]);
 }
 
-BattleGame.prototype.setInitialPlacedBids = function(user)
-{
-	if(this.level instanceof NormalBattleLevel)
-	{
-		this.setBattleLevelPlacedBids(user.placedBids['normalBattle']);
-	}
-	else if(this.level instanceof AdvanceBattleLevel)
-	{
-		this.setBattleLevelGameDefaultBids(user.placedBids['advanceBattle']);
-	}
-}
-
-BattleGame.prototype.setBattleLevelPlacedBids = function(key)
-{
-	var levelUniqueId 	= this.level.uniqueId,
-		gameUniqueId 	= this.uniqueId;
-
-	if(!key.hasOwnProperty(levelUniqueId))
-	{
-		key[levelUniqueId] = {};
-	}
-
-	if(!key[levelUniqueId].hasOwnProperty(gameUniqueId))
-	{
-		key[levelUniqueId][gameUniqueId] = [];
-	}
-}
-
-BattleGame.prototype.setDefaultAvailableBids = function(user)
-{
-	if(this.level instanceof NormalBattleLevel)
-	{
-		this.setBattleLevelGameDefaultBids(user.availableBids['normalBattle']);
-	}
-	else if(this.level instanceof AdvanceBattleLevel)
-	{
-		this.setBattleLevelGameDefaultBids(user.availableBids['advanceBattle']);
-	}
-}
-
-BattleGame.prototype.setBattleLevelGameDefaultBids = function(key)
-{
-	var levelUniqueId 	= this.level.uniqueId,
-		gameUniqueId 	= this.uniqueId;
-
-	if(!key.hasOwnProperty(levelUniqueId))
-	{
-		key[levelUniqueId] = {};
-	}
-
-	if(!key[levelUniqueId].hasOwnProperty(gameUniqueId))
-	{
-		key[levelUniqueId][gameUniqueId] = null;
-	}
-
-	key[levelUniqueId][gameUniqueId] = this.level.defaultAvailableBids;
-}
-
 BattleGame.prototype.getAllUsers = function()
 {
 	return this.users;
@@ -96,11 +40,11 @@ BattleGame.prototype.addUser = function(user)
 	if(!this.hasUser(user))
 	{
 		this.users.push(user);
-		this.setInitialPlacedBids(user);
-		this.setDefaultAvailableBids(user);
+		user.setDefaultBattlePlacedBids(this);
+		user.setDefaultBattleAvailableBids(this);
 	}
 
-	return this;
+	return user;
 }
 
 BattleGame.prototype.hasUser = function(user)
@@ -123,6 +67,31 @@ BattleGame.prototype.countDown = function()
 	{
 		this.timeclockContainer.countDown();
 	}
+}
+
+BattleGame.prototype.finishGame = function()
+{
+	// TO DO
+}
+
+BattleGame.prototype.emitTimerUpdates = function()
+{
+	var room 	= this.getRoomName(),
+		ns 		= global.ticktockGameState.jackpotSocketNs,
+		evt;
+
+	if(this instanceof NormalBattleLGame)
+	{
+		evt = EVT_EMIT_NORMAL_BATTLE_TIMER;
+	}
+
+    ns.in(room).emit(evt, {
+        battleClock         : this.getClock('game').getFormattedRemaining(),
+        currentBidDuration  : this.bidContainer.getLastBidDuration(),
+        currentBidUserName  : this.bidContainer.getLastBidUserName(),
+        longestBidDuration  : this.bidContainer.getLongestBidDuration(),
+        longestBidUserName  : this.bidContainer.getLongestBidUserName()
+    });
 }
 
 export default BattleGame;

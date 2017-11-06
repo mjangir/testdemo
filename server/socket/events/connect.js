@@ -1,7 +1,7 @@
 'use strict';
 
-import { 
-	EVT_ON_CLIENT_DISCONNECT, 
+import {
+	EVT_ON_CLIENT_DISCONNECT,
 	EVT_EMIT_JACKPOT_NO_JACKPOT_TO_PLAY,
 	EVT_ON_JACKPOT_GAME_QUITTED
 } from '../constants';

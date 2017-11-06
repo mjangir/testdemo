@@ -1,6 +1,6 @@
 'use strict';
 
-import { 
+import {
 	EVT_EMIT_JACKPOT_CAN_I_BID,
 	EVT_EMIT_JACKPOT_GAME_JOINED,
 	EVT_EMIT_JACKPOT_BID_PLACED,
@@ -9,9 +9,9 @@ import {
 	EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID
 } from '../../constants';
 
-import { 
-	convertAmountToCommaString, 
-	getUserObjectById 
+import {
+	convertAmountToCommaString,
+	getUserObjectById
 } from '../../../utils/functions';
 
 import Jackpot from './jackpot';
@@ -158,122 +158,254 @@ JackpotUser.prototype.emitMyBattlePlaceBidButtonToggle = function(socket, level,
 	}
 }
 
-JackpotUser.prototype.getNormalBattleAvailableBids = function(level, game)
-{
-	return this.availableBids['normalBattle'][level.uniqueId][game.uniqueId];
-}
-
-JackpotUser.prototype.getNormalBattlePlacedBids = function(level, game)
-{
-	return this.placedBids['normalBattle'][level.uniqueId][game.uniqueId];
-}
-
-JackpotUser.prototype.getAdvanceBattleAvailableBids = function(level, game)
-{
-	return this.availableBids['advanceBattle'][level.uniqueId][game.uniqueId];
-}
-
-JackpotUser.prototype.getAdvanceBattlePlacedBids = function(level, game)
-{
-	return this.placedBids['advanceBattle'][level.uniqueId][game.uniqueId];
-}
-
-
-
-/**
- * Bids Related Methods
- *
- */
-JackpotUser.prototype.getAvailableBidsCount = function()
-{
-	return this.availableBids['jackpot'];
-}
-
-JackpotUser.prototype.getPlacedBidsCount = function()
-{
-	return this.placedBids['jackpot'].length;
-}
-
-JackpotUser.prototype.afterPlacedBid = function(bidContainer, parent, socket, bid)
-{
-	if(parent instanceof Jackpot)
-	{
-		this.afterPlacedJackpotBid(bidContainer, parent, socket, bid);
-	}
-	else if(parent instanceof NormalBattleLGame)
-	{
-		this.afterPlacedNormalBattleBid(bidContainer, parent, socket, bid);
-	}
-	else if(parent instanceof AdvanceBattleLGame)
-	{
-		this.afterPlacedAdvanceBattleBid(bidContainer, parent, socket, bid);
-	}
-}
-
-JackpotUser.prototype.afterPlacedJackpotBid = function(bidContainer, parent, socket, bid)
-{
-	this.placedBids['jackpot'].push(bid);
-
-	if(this.availableBids['jackpot'] > 0)
-	{
-		this.availableBids['jackpot'] -= 1;
-	}
-
-    socket.emit(EVT_EMIT_JACKPOT_BID_PLACED, {
-        availableBids:          this.availableBids['jackpot'],
-        totalPlacedBids:        this.placedBids['jackpot'].length,
-        myLongestBidDuration:   bidContainer.getLongestBidDurationByUserId(bid.userId)
-    });
-
-    socket.emit(EVT_EMIT_JACKPOT_CAN_I_BID, {
-		canIBid: false
-	});
-}
-
-JackpotUser.prototype.afterPlacedNormalBattleBid = function(game, bid, socket)
-{
-	this.afterPlacedBattleBid(game, bid, socket, this.placedBids['normalBattle']);
-}
-
-JackpotUser.prototype.afterPlacedAdvanceBattleBid = function(game, bid, socket)
-{
-	this.afterPlacedBattleBid(game, bid, socket, this.placedBids['advanceBattle']);
-}
-
-JackpotUser.prototype.afterPlacedBattleBid = function(game, bid, socket, placeBids)
-{
-	var level 			= game.level,
-		levelUniqueId 	= level.uniqueId,
-		gameUniqueId 	= game.uniqueId,
-		availableBids 	= this.getNormalBattleAvailableBids(level, game);
-
-	placeBids[levelUniqueId][gameUniqueId].push(bid);
-
-	if(availableBids > 0)
-	{
-		availableBids -= 1;
-	}
-
-	// var normalBattleBids 	= this.placedBids[battleType],
-	// 	battleLevel 		= game.level;
-
-	// normalBattleBids.push({
-	// 	id 		: battleLevel.id,
-	// 	order	: battleLevel.order,
-	// 	bid 	: bid
-	// });
-}
-
 JackpotUser.prototype.getNormalBattleTotalWinnings = function(level)
 {
 	var allWins 	= this.battleWins['normalBattle'],
 		uniqueId 	= level.uniqueId,
 		levelWins 	= _.filter(allWins, function(o)
-		{ 
-		    return o.levelUniqueId == uniqueId; 
+		{
+		    return o.levelUniqueId == uniqueId;
 		});
 
 	return levelWins.length;
+}
+
+
+
+/**
+ * The below are only Bid Related function to get anytime jackpot,
+ * normal battle and advance battle available bids, placed bids as
+ * well as set default available bids and placed bids. Also increase
+ * or decrease the available and placed bids for all of them
+ */
+
+JackpotUser.prototype.setDefaultJackpotAvailableBids = function()
+{
+    var key         = 'jackpot_setting_default_bid_per_user_per_game',
+        settings    = global.ticktockGameState.settings,
+        defaultBid  = (settings.hasOwnProperty(key) && settings[key] != "") ? parseInt(settings[key], 10) : 10;
+
+    this.availableBids['jackpot'] = defaultBid;
+}
+
+JackpotUser.prototype.setDefaultBattleAvailableBids = function(battleGame)
+{
+    var level = battleGame.level;
+
+    if(battleGame instanceof NormalBattleLGame)
+    {
+        this.setDefaultBattleTypeAvailableBids(level, battleGame, 'normalBattle');
+    }
+    else if(battleGame instanceof AdvanceBattleLGame)
+    {
+        this.setDefaultBattleTypeAvailableBids(level, battleGame, 'advanceBattle');
+    }
+}
+
+JackpotUser.prototype.setDefaultBattleTypeAvailableBids = function(level, game, type)
+{
+    var availableBids = this.availableBids[type];
+
+    if(!availableBids.hasOwnProperty(level.uniqueId))
+    {
+        availableBids[level.uniqueId] = {};
+    }
+    if(!availableBids[level.uniqueId].hasOwnProperty(game.uniqueId))
+    {
+        availableBids[level.uniqueId][game.uniqueId] = level.defaultAvailableBids;
+    }
+}
+
+JackpotUser.prototype.getJackpotAvailableBids = function()
+{
+    return this.availableBids['jackpot'];
+}
+
+JackpotUser.prototype.getNormalBattleAvailableBids = function(level, game)
+{
+    var availableBids = this.availableBids['normalBattle'];
+
+    if(!availableBids.hasOwnProperty(level.uniqueId))
+    {
+        availableBids[level.uniqueId] = {};
+    }
+    if(!availableBids[level.uniqueId].hasOwnProperty(game.uniqueId))
+    {
+        availableBids[level.uniqueId][game.uniqueId] = [];
+    }
+    return availableBids[level.uniqueId][game.uniqueId];
+}
+
+JackpotUser.prototype.getAdvanceBattleAvailableBids = function(level, game)
+{
+    var availableBids = this.availableBids['advanceBattle'];
+
+    if(!availableBids.hasOwnProperty(level.uniqueId))
+    {
+        availableBids[level.uniqueId] = {};
+    }
+    if(!availableBids[level.uniqueId].hasOwnProperty(game.uniqueId))
+    {
+        availableBids[level.uniqueId][game.uniqueId] = [];
+    }
+    return availableBids[level.uniqueId][game.uniqueId];
+}
+
+JackpotUser.prototype.setDefaultBattlePlacedBids = function(battleGame)
+{
+    var level = battleGame.level;
+
+    if(battleGame instanceof NormalBattleLGame)
+    {
+        this.setDefaultBattleTypePlacedBids(level, battleGame, 'normalBattle');
+    }
+    else if(battleGame instanceof AdvanceBattleLGame)
+    {
+        this.setDefaultBattleTypePlacedBids(level, battleGame, 'advanceBattle');
+    }
+}
+
+JackpotUser.prototype.setDefaultBattleTypePlacedBids = function(level, game, type)
+{
+    var placedBids = this.placedBids[type];
+
+    if(!placedBids.hasOwnProperty(level.uniqueId))
+    {
+        placedBids[level.uniqueId] = {};
+    }
+    if(!placedBids[level.uniqueId].hasOwnProperty(game.uniqueId))
+    {
+        placedBids[level.uniqueId][game.uniqueId] = [];
+    }
+}
+
+JackpotUser.prototype.getJackpotPlacedBids = function()
+{
+    return this.placedBids['jackpot'];
+}
+
+JackpotUser.prototype.getNormalBattlePlacedBids = function(level, game)
+{
+    var placedBids = this.placedBids['normalBattle'];
+
+    if(!placedBids.hasOwnProperty(level.uniqueId))
+    {
+        placedBids[level.uniqueId] = {};
+    }
+    if(!placedBids[level.uniqueId].hasOwnProperty(game.uniqueId))
+    {
+        placedBids[level.uniqueId][game.uniqueId] = [];
+    }
+    return placedBids[level.uniqueId][game.uniqueId];
+}
+
+JackpotUser.prototype.getAdvanceBattlePlacedBids = function(level, game)
+{
+    var placedBids = this.placedBids['advanceBattle'];
+
+    if(!placedBids.hasOwnProperty(level.uniqueId))
+    {
+        placedBids[level.uniqueId] = {};
+    }
+    if(!placedBids[level.uniqueId].hasOwnProperty(game.uniqueId))
+    {
+        placedBids[level.uniqueId][game.uniqueId] = [];
+    }
+    return placedBids[level.uniqueId][game.uniqueId];
+}
+
+JackpotUser.prototype.decreaseJackpotAvailableBids = function()
+{
+    var jackpotAvailableBids = this.getJackpotAvailableBids();
+
+    if(jackpotAvailableBids > 0)
+    {
+        jackpotAvailableBids -= 1;
+    }
+}
+
+JackpotUser.prototype.decreaseNormalBattleAvailableBids = function(level, game)
+{
+    var availableBids = this.getNormalBattleAvailableBids(level, game);
+
+    if(availableBids > 0)
+    {
+        availableBids -= 1;
+    }
+}
+
+JackpotUser.prototype.decreaseAdvanceBattleAvailableBids = function(level, game)
+{
+    var availableBids = this.getAdvanceBattleAvailableBids(level, game);
+
+    if(availableBids > 0)
+    {
+        availableBids -= 1;
+    }
+}
+
+JackpotUser.prototype.increaseJackpotPlacedBids = function(bid)
+{
+    var placedBids = this.getJackpotPlacedBids();
+    placedBids.push(bid);
+}
+
+JackpotUser.prototype.increaseNormalBattlePlacedBids = function(level, game, bid)
+{
+    var placedBids = this.getNormalBattlePlacedBids(level, game);
+    placedBids.push(bid);
+}
+
+JackpotUser.prototype.increaseAdvanceBattlePlacedBids = function(level, game, bid)
+{
+    var placedBids = this.getAdvanceBattlePlacedBids(level, game);
+    placedBids.push(bid);
+}
+
+JackpotUser.prototype.afterPlacedBid = function(bidContainer, parent, socket, bid)
+{
+    if(parent instanceof Jackpot)
+    {
+        this.afterPlacedJackpotBid(bidContainer, parent, socket, bid);
+    }
+    else if(parent instanceof NormalBattleLGame)
+    {
+        this.afterPlacedNormalBattleBid(bidContainer, parent, socket, bid);
+    }
+    else if(parent instanceof AdvanceBattleLGame)
+    {
+        this.afterPlacedAdvanceBattleBid(bidContainer, parent, socket, bid);
+    }
+}
+
+JackpotUser.prototype.afterPlacedJackpotBid = function(bidContainer, parent, socket, bid)
+{
+    this.decreaseJackpotAvailableBids();
+    this.increaseJackpotPlacedBids(bid);
+
+    socket.emit(EVT_EMIT_JACKPOT_BID_PLACED, {
+        availableBids:          this.getJackpotAvailableBids(),
+        totalPlacedBids:        this.getJackpotPlacedBids().length,
+        myLongestBidDuration:   bidContainer.getLongestBidDurationByUserId(this.userId)
+    });
+
+    socket.emit(EVT_EMIT_JACKPOT_CAN_I_BID, {
+        canIBid: false
+    });
+}
+
+JackpotUser.prototype.afterPlacedNormalBattleBid = function(bidContainer, game, socket, bid)
+{
+    var level = game.level;
+    this.decreaseNormalBattleAvailableBids(level, game);
+    this.increaseNormalBattlePlacedBids(level, game, bid);
+}
+
+JackpotUser.prototype.afterPlacedAdvanceBattleBid = function(bidContainer, game, socket, bid)
+{
+    var level = game.level;
+    this.decreaseAdvanceBattleAvailableBids(level, game);
+    this.increaseAdvanceBattlePlacedBids(level, game, bid);
 }
 
 export default JackpotUser;

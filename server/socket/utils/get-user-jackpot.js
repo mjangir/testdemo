@@ -60,7 +60,7 @@ function getNewJackpotByUserId(currentJackpot, userId)
 	     	}
 	   	}
 	}
-	
+
 	// Then try to get the first not started jackpot
 	if(finalJackpot == false)
 	{
@@ -73,7 +73,7 @@ function getNewJackpotByUserId(currentJackpot, userId)
 	     	}
 	   	}
 	}
-   	
+
    	// Return the promise
 	return new Promise(function(resolve, reject)
 	{

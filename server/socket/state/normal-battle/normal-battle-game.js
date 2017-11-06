@@ -109,20 +109,6 @@ NormalBattleGame.prototype.startGame = function()
     }
 }
 
-NormalBattleGame.prototype.updateTimerEverySecond = function()
-{
-	var room 	= this.getRoomName(),
-		ns 		= global.ticktockGameState.jackpotSocketNs;
-
-    ns.in(room).emit(EVT_EMIT_NORMAL_BATTLE_TIMER, {
-        battleClock         : this.getClock('game').getFormattedRemaining(),
-        currentBidDuration  : this.bidContainer.getLastBidDuration(),
-        currentBidUserName  : this.bidContainer.getLastBidUserName(),
-        longestBidDuration  : this.bidContainer.getLongestBidDuration(),
-        longestBidUserName  : this.bidContainer.getLongestBidUserName()
-    });
-}
-
 
 
 export default NormalBattleGame;
