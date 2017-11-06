@@ -173,8 +173,17 @@ Jackpot.prototype.addUserById = function(userId)
 {
 	var user = new JackpotUser(this, userId);
 	this.users.push(user);
-
+	this.setDefaultAvailableBidsForUser(user);
 	return user;
+}
+
+Jackpot.prototype.setDefaultAvailableBidsForUser = function(user)
+{
+	var key 		= 'jackpot_setting_default_bid_per_user_per_game',
+		settings 	= global.ticktockGameState.settings,
+		defaultBid 	= (settings.hasOwnProperty(key) && settings[key] != "") ? parseInt(settings[key], 10) : 10;
+
+	user.availableBids['jackpot'] = defaultBid;
 }
 
 Jackpot.prototype.getUserById = function(userId)

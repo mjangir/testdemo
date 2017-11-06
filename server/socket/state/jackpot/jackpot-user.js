@@ -25,8 +25,6 @@ function JackpotUser(jackpot, userId)
 	this.jackpot 				= jackpot;
 	this.joinedOn 				= new Date();
 	this.isActive 				= true;
-	this.normalBattleWinsCount 	= 0;
-	this.advanceBattleWinsCount = 0;
 	this.userGameStatus 		= 'PLAYING';
 
 	this.availableBids = {
@@ -45,17 +43,6 @@ function JackpotUser(jackpot, userId)
 		'normalBattle' 	: [],
 		'advanceBattle' : []
 	};
-
-	this.setDefaultAvailableBids();
-}
-
-JackpotUser.prototype.setDefaultAvailableBids = function()
-{
-	var key 		= 'jackpot_setting_default_bid_per_user_per_game',
-		settings 	= global.ticktockGameState.settings,
-		defaultBid 	= (settings.hasOwnProperty(key) && settings[key] != "") ? parseInt(settings[key], 10) : 10;
-
-	this.availableBids['jackpot'] = defaultBid;
 }
 
 JackpotUser.prototype.isQuitted = function()
@@ -234,7 +221,7 @@ JackpotUser.prototype.afterPlacedJackpotBid = function(bidContainer, parent, soc
 
     socket.emit(EVT_EMIT_JACKPOT_BID_PLACED, {
         availableBids:          this.availableBids['jackpot'],
-        totalPlacedBids:        bidContainer.getTotalBidsCountByUserId(bid.userId),
+        totalPlacedBids:        this.placedBids['jackpot'].length,
         myLongestBidDuration:   bidContainer.getLongestBidDurationByUserId(bid.userId)
     });
 

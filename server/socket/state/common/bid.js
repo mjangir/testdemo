@@ -1,6 +1,7 @@
 'use strict';
 
 import moment from 'moment';
+import {generateRandomString} from '../../../utils/functions';
 
 /**
  * Constructor
@@ -14,6 +15,7 @@ function Bid(userId)
 	this.startTime 	= new Date();
 	this.endTime 	= null;
 	this.duration 	= null;
+	this.uniqueId 	= generateRandomString(20, 'aA');
 }
 
 /**
