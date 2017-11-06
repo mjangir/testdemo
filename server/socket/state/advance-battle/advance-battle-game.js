@@ -13,5 +13,7 @@ function AdvanceBattleGame(level)
 
 AdvanceBattleGame.prototype = Object.create(BattleGame.prototype);
 
+AdvanceBattleGame.prototype.constructor = AdvanceBattleGame;
+
 
 export default AdvanceBattleGame;

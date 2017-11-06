@@ -94,6 +94,23 @@ function getSimplifiedJackpots(jackpots)
 }
 
 /**
+ * Get Simplified Settings
+ *
+ * @param  {Array} settings
+ * @return {Object}
+ */
+function getSimplifiedSettings(settings)
+{
+    var obj = {};
+
+    for(var k in settings)
+    {
+        obj[settings[k].key] = settings[k].value;
+    }
+    return obj;
+}
+
+/**
  * Create Global Game State
  *
  * @param  {Socket.IO} socketio
@@ -105,7 +122,7 @@ export default function(socketio)
     return getAllSettings()
     .then(function(settings)
     {
-        global.ticktockGameState.settings = settings;
+        global.ticktockGameState.settings = getSimplifiedSettings(settings);
         return getAllUsers();
     
     }).then(function(users)

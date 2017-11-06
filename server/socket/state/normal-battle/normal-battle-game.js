@@ -30,6 +30,8 @@ function NormalBattleGame(level)
 
 NormalBattleGame.prototype = Object.create(BattleGame.prototype);
 
+NormalBattleGame.prototype.constructor = NormalBattleGame;
+
 NormalBattleGame.prototype.getAllPlayersList = function()
 {
 	var users 	= this.getAllUsers(),
@@ -49,6 +51,7 @@ NormalBattleGame.prototype.getAllPlayersList = function()
 		remainingBids 	= availableBids - placedBids;
 
 		players.push({
+			id 				: user.userId,
 			userId 			: user.userId,
 			name 			: name,
 			picture 		: avatarUrl,
@@ -108,7 +111,6 @@ NormalBattleGame.prototype.startGame = function()
 	    }(i, time, context));
     }
 }
-
 
 
 export default NormalBattleGame;

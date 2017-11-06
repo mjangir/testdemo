@@ -23,10 +23,12 @@ function NormalBattleLevel(jackpot, data)
 
 	this.games 						= [];
 
-	BattleLevel.call(this, data);
+	BattleLevel.call(this, jackpot, data);
 }
 
 NormalBattleLevel.prototype = Object.create(BattleLevel.prototype);
+
+NormalBattleLevel.prototype.constructor = NormalBattleLevel;
 
 NormalBattleLevel.prototype.isLockedForUser = function(previousLevel, user)
 {

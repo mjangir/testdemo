@@ -4,6 +4,7 @@
 export const EVT_ON_CLIENT_CONNECTION  						= 'connection';
 export const EVT_ON_CLIENT_DISCONNECT 						= 'disconnect';
 export const EVT_EMIT_ON_CLIENT_DISCONNECT 					= 'updated_jackpot_data';
+export const EVT_EMIT_NO_ENOUGH_BIDS 						= 'no_enough_available_bids';
 
 // Jackpot Specific Constants
 export const EVT_ON_JACKPOT_BID_PLACED   					= 'place_bid';
@@ -31,7 +32,6 @@ export const EVT_ON_NORMAL_BATTLE_PLACE_BID  				= 'request_place_normal_battle_
 
 export const EVT_EMIT_NORMAL_BATTLE_JOINED 	 				= 'response_join_normal_battle_level';
 export const EVT_EMIT_NORMAL_BATTLE_BID_PLACED 				= 'response_place_normal_battle_level_bid';
-export const EVT_EMIT_NORMAL_BATTLE_NO_ENOUGH_BIDS 			= 'no_enough_available_bids';
 export const EVT_EMIT_NORMAL_BATTLE_UPDATE_PLAYERS 			= 'update_normal_battle_level_player_list';
 export const EVT_EMIT_NORMAL_BATTLE_TIMER        			= 'update_normal_battle_level_timer';
 export const EVT_EMIT_NORMAL_BATTLE_GAME_STARTED  			= 'normal_battle_level_game_started';

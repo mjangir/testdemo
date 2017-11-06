@@ -2,7 +2,7 @@
 
 import {generateRandomString} from '../../../utils/functions';
 import JackpotUser from '../jackpot/jackpot-user';
-import BattleGame from './battle-game';
+import _ from 'lodash';
 
 function BattleLevel(jackpot, data)
 {
@@ -14,6 +14,11 @@ function BattleLevel(jackpot, data)
 BattleLevel.prototype.getAllGames = function()
 {
 	return this.games;
+}
+
+BattleLevel.prototype.getGameByUniqueId = function(uniqueId)
+{
+	return _.find(this.games, {uniqueId: uniqueId});
 }
 
 BattleLevel.prototype.getAvailableGameSlot = function()
@@ -37,6 +42,17 @@ BattleLevel.prototype.getAvailableGameSlot = function()
 	}
 
 	return false;
+}
+
+BattleLevel.prototype.updateJackpotAmount = function()
+{
+	if(this.games.length > 0)
+	{
+		for(var k in this.games)
+		{
+			this.games[k].updateJackpotAmount();
+		}
+	}
 }
 
 BattleLevel.prototype.fireOnEverySecond = function()

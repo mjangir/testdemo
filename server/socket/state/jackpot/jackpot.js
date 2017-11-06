@@ -133,7 +133,21 @@ Jackpot.prototype.sendUpdatedAmountToJackpotSockets = function()
 
 Jackpot.prototype.sendUpdatedAmountToBattleSockets = function()
 {
+    if(this.normalBattleLevels.length > 0)
+    {
+        for(var i in this.normalBattleLevels)
+        {
+            this.normalBattleLevels[i].updateJackpotAmount();
+        }
+    }
 
+    if(this.advanceBattleLevels.length > 0)
+    {
+        for(var k in this.advanceBattleLevels)
+        {
+            this.advanceBattleLevels[k].updateJackpotAmount();
+        }
+    }
 }
 
 Jackpot.prototype.getUsers = function()

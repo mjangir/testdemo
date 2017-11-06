@@ -1,12 +1,14 @@
 'use strict';
 
 import {
+    EVT_EMIT_NO_ENOUGH_BIDS,
 	EVT_EMIT_JACKPOT_CAN_I_BID,
 	EVT_EMIT_JACKPOT_GAME_JOINED,
 	EVT_EMIT_JACKPOT_BID_PLACED,
 	EVT_EMIT_NORMAL_BATTLE_JOINED,
 	EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID,
-	EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID
+	EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID,
+    EVT_EMIT_NORMAL_BATTLE_BID_PLACED
 } from '../../constants';
 
 import {
@@ -179,6 +181,21 @@ JackpotUser.prototype.getNormalBattleTotalWinnings = function(level)
  * or decrease the available and placed bids for all of them
  */
 
+JackpotUser.prototype.setJackpotAvailableBids = function(bids)
+{
+    this.availableBids['jackpot'] = bids;
+}
+
+JackpotUser.prototype.setNormalBattleAvailableBids = function(level, game, bids)
+{
+    this.availableBids['normalBattle'][level.uniqueId][game.uniqueId] = bids;
+}
+
+JackpotUser.prototype.setAdvanceBattleAvailableBids = function(level, game, bids)
+{
+    this.availableBids['advanceBattle'][level.uniqueId][game.uniqueId] = bids;
+}
+
 JackpotUser.prototype.setDefaultJackpotAvailableBids = function()
 {
     var key         = 'jackpot_setting_default_bid_per_user_per_game',
@@ -316,12 +333,14 @@ JackpotUser.prototype.getAdvanceBattlePlacedBids = function(level, game)
 
 JackpotUser.prototype.decreaseJackpotAvailableBids = function()
 {
-    var jackpotAvailableBids = this.getJackpotAvailableBids();
+    var availableBids = this.getJackpotAvailableBids();
 
-    if(jackpotAvailableBids > 0)
+    if(availableBids > 0)
     {
-        jackpotAvailableBids -= 1;
+        availableBids -= 1;
     }
+
+    this.setJackpotAvailableBids(availableBids);
 }
 
 JackpotUser.prototype.decreaseNormalBattleAvailableBids = function(level, game)
@@ -332,6 +351,8 @@ JackpotUser.prototype.decreaseNormalBattleAvailableBids = function(level, game)
     {
         availableBids -= 1;
     }
+
+    this.setNormalBattleAvailableBids(level, game, availableBids);
 }
 
 JackpotUser.prototype.decreaseAdvanceBattleAvailableBids = function(level, game)
@@ -342,6 +363,8 @@ JackpotUser.prototype.decreaseAdvanceBattleAvailableBids = function(level, game)
     {
         availableBids -= 1;
     }
+
+    this.setAdvanceBattleAvailableBids(level, game, availableBids);
 }
 
 JackpotUser.prototype.increaseJackpotPlacedBids = function(bid)
@@ -397,8 +420,20 @@ JackpotUser.prototype.afterPlacedJackpotBid = function(bidContainer, parent, soc
 JackpotUser.prototype.afterPlacedNormalBattleBid = function(bidContainer, game, socket, bid)
 {
     var level = game.level;
+
     this.decreaseNormalBattleAvailableBids(level, game);
     this.increaseNormalBattlePlacedBids(level, game, bid);
+
+    socket.emit(EVT_EMIT_NORMAL_BATTLE_BID_PLACED, {
+        availableBids:          this.getNormalBattleAvailableBids(level, game),
+        totalPlacedBids:        this.getNormalBattlePlacedBids(level, game).length
+    });
+
+    socket.emit(EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID, {status: true});
+
+    socket.broadcast.in(game.getRoomName()).emit(EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID, {status: true});
+
+    game.emitUpdatesToItsRoom();
 }
 
 JackpotUser.prototype.afterPlacedAdvanceBattleBid = function(bidContainer, game, socket, bid)
@@ -406,6 +441,24 @@ JackpotUser.prototype.afterPlacedAdvanceBattleBid = function(bidContainer, game,
     var level = game.level;
     this.decreaseAdvanceBattleAvailableBids(level, game);
     this.increaseAdvanceBattlePlacedBids(level, game, bid);
+}
+
+JackpotUser.prototype.emitNoEnoughJackpotBids = function(socket)
+{
+    socket.emit(EVT_EMIT_NO_ENOUGH_BIDS);
+
+    socket.emit(EVT_EMIT_JACKPOT_CAN_I_BID, {canIBid: false});
+
+    socket.broadcast.in(this.jackpot.getRoomName()).emit(EVT_EMIT_JACKPOT_CAN_I_BID, {canIBid: true});
+}
+
+JackpotUser.prototype.emitNoEnoughNormalBattleBids = function(socket, level, game)
+{
+    socket.emit(EVT_EMIT_NO_ENOUGH_BIDS);
+
+    socket.emit(EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID, {status: true});
+
+    socket.broadcast.in(game.getRoomName()).emit(EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID, {status: true});
 }
 
 export default JackpotUser;
