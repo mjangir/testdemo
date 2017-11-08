@@ -27,8 +27,9 @@ export const EVT_EMIT_JACKPOT_UPDATE_BATTLE_STREAK 			= 'update_home_jackpot_bat
 
 
 // Jackpot Normal Battle Specific Constants
-export const EVT_ON_NORMAL_BATTLE_JOIN_GAME       		= 'request_join_normal_battle_level';
+export const EVT_ON_NORMAL_BATTLE_JOIN_GAME       		    = 'request_join_normal_battle_level';
 export const EVT_ON_NORMAL_BATTLE_PLACE_BID  				= 'request_place_normal_battle_level_bid';
+export const EVT_ON_NORMAL_BATTLE_QUIT_GAME                 = 'quit_normal_battle_game';
 
 export const EVT_EMIT_NORMAL_BATTLE_JOINED 	 				= 'response_join_normal_battle_level';
 export const EVT_EMIT_NORMAL_BATTLE_BID_PLACED 				= 'response_place_normal_battle_level_bid';
@@ -41,10 +42,30 @@ export const EVT_EMIT_NORMAL_BATTLE_GAME_FINISHED  			= 'normal_battle_level_gam
 export const EVT_EMIT_NORMAL_BATTLE_GAME_ABOUT_TO_START 	= 'normal_battle_game_about_to_start';
 export const EVT_EMIT_NORMAL_BATTLE_UPDATE_JACKPOT_AMOUNT 	= 'update_normal_battle_jackpot_amount';
 export const EVT_EMIT_NORMAL_BATTLE_JACKPOT_FINISHED 		= 'normal_battle_main_jackpot_finished';
+export const EVT_EMIT_NORMAL_BATTLE_SHOW_QUIT_BUTTON        = 'show_normal_battle_quit_button';
+export const EVT_EMIT_NORMAL_BATTLE_HIDE_QUIT_BUTTON        = 'show_normal_battle_quit_button';
+export const EVT_EMIT_NORMAL_BATTLE_GAME_QUITTED            = 'normal_battle_game_quitted';
 
 
 
 // Jackpot Advance Battle Specific Constants
+export const EVT_ON_ADVANCE_BATTLE_JOIN_GAME                 = 'request_join_advance_battle_level';
+export const EVT_ON_ADVANCE_BATTLE_PLACE_BID                 = 'request_place_advance_battle_level_bid';
+export const EVT_ON_ADVANCE_BATTLE_QUIT_GAME                 = 'quit_advance_battle_game';
 
+export const EVT_EMIT_ADVANCE_BATTLE_JOINED                  = 'response_join_advance_battle_level';
+export const EVT_EMIT_ADVANCE_BATTLE_BID_PLACED              = 'response_place_advance_battle_level_bid';
+export const EVT_EMIT_ADVANCE_BATTLE_UPDATE_PLAYERS          = 'update_advance_battle_level_player_list';
+export const EVT_EMIT_ADVANCE_BATTLE_TIMER                   = 'update_advance_battle_level_timer';
+export const EVT_EMIT_ADVANCE_BATTLE_GAME_STARTED            = 'advance_battle_level_game_started';
+export const EVT_EMIT_ADVANCE_BATTLE_HIDE_PLACE_BID          = 'hide_advance_battle_level_place_bid_button';
+export const EVT_EMIT_ADVANCE_BATTLE_SHOW_PLACE_BID          = 'show_advance_battle_level_place_bid_button';
+export const EVT_EMIT_ADVANCE_BATTLE_GAME_FINISHED           = 'advance_battle_level_game_finished';
+export const EVT_EMIT_ADVANCE_BATTLE_GAME_ABOUT_TO_START     = 'advance_battle_game_about_to_start';
+export const EVT_EMIT_ADVANCE_BATTLE_UPDATE_JACKPOT_AMOUNT   = 'update_advance_battle_jackpot_amount';
+export const EVT_EMIT_ADVANCE_BATTLE_JACKPOT_FINISHED        = 'advance_battle_main_jackpot_finished';
+export const EVT_EMIT_ADVANCE_BATTLE_SHOW_QUIT_BUTTON        = 'show_advance_battle_quit_button';
+export const EVT_EMIT_ADVANCE_BATTLE_HIDE_QUIT_BUTTON        = 'show_advance_battle_quit_button';
+export const EVT_EMIT_ADVANCE_BATTLE_GAME_QUITTED            = 'advance_battle_game_quitted';
 
 // Money Battle Specific Constants

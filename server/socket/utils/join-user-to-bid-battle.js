@@ -39,7 +39,6 @@ export default function(level, user, game, socket, data)
 
         socket.leave(previousRoom, function()
         {
-
         	socket.join(newRoom);
 
             if(!game.hasUser(user))
@@ -47,10 +46,7 @@ export default function(level, user, game, socket, data)
                 game.addUser(user);
             }
 
-            user.emitMeJoinedNormalBattle(socket, level, game, data);
-            game.startGame();
-            user.emitMyBattlePlaceBidButtonToggle(socket, level, game, data);
-            game.emitUpdatesToItsRoom(socket);
+            user.afterJoinBattle(socket, level, game, data);
         });
 	}
 }

@@ -14,10 +14,8 @@ export default function(jackpot, socket, userId)
 	// Join the room now
 	socket.join(room);
 
-	// Emit socket events
-	jackpot.emitSomeoneJoined();
-	user.emitMeJoined();
-	user.emitCanIBid();
+	// After Join Jackpot
+	user.afterJoinJackpot();
 
 	return new Promise(function(resolve, reject)
 	{

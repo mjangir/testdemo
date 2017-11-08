@@ -47,4 +47,14 @@ NormalBattleLevel.prototype.createNewGame = function()
 	return game;
 }
 
+NormalBattleLevel.prototype.getBasicInfo = function()
+{
+	return {
+        uniqueId    : this.uniqueId,
+        levelName   : this.levelName,
+        prizeValue  : this.prizeBids,
+        prizeType   : 'BID'
+    };
+}
+
 export default NormalBattleLevel;

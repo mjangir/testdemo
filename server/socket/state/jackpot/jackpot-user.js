@@ -5,10 +5,21 @@ import {
 	EVT_EMIT_JACKPOT_CAN_I_BID,
 	EVT_EMIT_JACKPOT_GAME_JOINED,
 	EVT_EMIT_JACKPOT_BID_PLACED,
+    EVT_EMIT_JACKPOT_GAME_QUITTED,
+
 	EVT_EMIT_NORMAL_BATTLE_JOINED,
 	EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID,
 	EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID,
-    EVT_EMIT_NORMAL_BATTLE_BID_PLACED
+    EVT_EMIT_NORMAL_BATTLE_BID_PLACED,
+    EVT_EMIT_NORMAL_BATTLE_SHOW_QUIT_BUTTON,
+    EVT_EMIT_NORMAL_BATTLE_GAME_QUITTED,
+
+    EVT_EMIT_ADVANCE_BATTLE_JOINED,
+    EVT_EMIT_ADVANCE_BATTLE_SHOW_PLACE_BID,
+    EVT_EMIT_ADVANCE_BATTLE_HIDE_PLACE_BID,
+    EVT_EMIT_ADVANCE_BATTLE_BID_PLACED,
+    EVT_EMIT_ADVANCE_BATTLE_SHOW_QUIT_BUTTON,
+    EVT_EMIT_ADVANCE_BATTLE_GAME_QUITTED
 } from '../../constants';
 
 import {
@@ -52,11 +63,6 @@ JackpotUser.prototype.isQuitted = function()
 	return this.userGameStatus == 'QUITTED';
 }
 
-JackpotUser.prototype.quitGame = function()
-{
-	this.userGameStatus = 'QUITTED';
-}
-
 JackpotUser.prototype.markAsInactive = function()
 {
 	var context = this;
@@ -67,97 +73,6 @@ JackpotUser.prototype.markAsInactive = function()
 	{
 		resolve(context.jackpot);
 	});
-}
-
-JackpotUser.prototype.emitMeJoined = function()
-{
-	var socket 		= this.currentSocket,
-		jackpot 	= this.jackpot,
-		userInfo 	= getUserObjectById(this.userId),
-		bidContainer= this.jackpot.bidContainer,
-		bidsByUser 	= bidContainer.getAllBids(this.userId);
-
-	socket.emit(EVT_EMIT_JACKPOT_GAME_JOINED, {
-	    jackpotInfo:    {
-	        uniqueId:    jackpot.uniqueId,
-	        name:        jackpot.title,
-	        amount:      convertAmountToCommaString(jackpot.jackpotAmount)
-	    },
-	    userInfo: {
-	        name:               userInfo.name,
-	        availableBids:      this.availableBids['jackpot'],
-	        totalPlacedBids:    bidsByUser.length,
-	    }
-	});
-}
-
-JackpotUser.prototype.emitCanIBid = function()
-{
-	var socket 			= this.currentSocket,
-		users 			= this.jackpot.users,
-		minPlayers 		= this.jackpot.minPlayersRequired,
-		lastBidUserId 	= this.jackpot.bidContainer.getLastBidUserId(),
-		room 			= this.jackpot.getRoomName(),
-		canIBid 		= false,
-		namespace 		= global.ticktockGameState.jackpotSocketNs;
-
-	if(users.length < minPlayers)
-	{
-		namespace.in(room).emit(EVT_EMIT_JACKPOT_CAN_I_BID, {canIBid: false});
-	}
-	else
-	{
-		socket.emit(EVT_EMIT_JACKPOT_CAN_I_BID, {
-			canIBid: (lastBidUserId != this.userId)
-		});
-	}
-}
-
-JackpotUser.prototype.emitMeJoinedNormalBattle = function(socket, level, game, data)
-{
-	socket.emit(EVT_EMIT_NORMAL_BATTLE_JOINED, {
-        jackpotInfo:    {
-            uniqueId:    this.jackpot.uniqueId,
-            name:        this.jackpot.title,
-            amount:      convertAmountToCommaString(this.jackpot.jackpotAmount)
-        },
-        levelInfo: {
-            uniqueId    : level.uniqueId,
-            levelName   : level.levelName,
-            prizeValue  : level.prizeBids,
-            prizeType   : 'BID'
-        },
-        myInfo: {
-            userId 			: this.userId,
-            name 			: getUserObjectById(this.userId).name,
-            availableBids 	: this.getNormalBattleAvailableBids(level, game),
-            totalPlacedBids : this.getNormalBattlePlacedBids(level, game).length
-        },
-        gameInfo: {
-            duration : game.getClock('game').getFormattedRemaining(),
-            uniqueId : game.uniqueId
-        },
-        players             : game.getAllPlayersList(),
-        currentBidDuration 	: game.bidContainer.getLastBidDuration(true),
-        currentBidUser 		: game.bidContainer.getLastBidUserName(),
-        longestBidDuration 	: game.bidContainer.getLongestBidDuration(true),
-        longestBidUser  	: game.bidContainer.getLongestBidUserName()
-    });
-}
-
-JackpotUser.prototype.emitMyBattlePlaceBidButtonToggle = function(socket, level, game, data)
-{
-	var gameNotStarted 	= game.isNotStarted(),
-		lastBidUserId 	= game.bidContainer.getLastBidUserId();
-
-	if(gameNotStarted || (lastBidUserId != null && lastBidUserId == this.userId))
-	{
-		socket.emit(EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID);
-	}
-	else
-	{
-		socket.emit(EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID);
-	}
 }
 
 JackpotUser.prototype.getNormalBattleTotalWinnings = function(level)
@@ -173,6 +88,175 @@ JackpotUser.prototype.getNormalBattleTotalWinnings = function(level)
 }
 
 
+/**
+ * The below are only the method which will be called after joining
+ * a bid battle or jackpot
+ */
+
+/**
+ * After joining the jackpot
+ *
+ * @return {*}
+ */
+JackpotUser.prototype.afterJoinJackpot = function()
+{
+    var socket          = this.currentSocket,
+        jackpot         = this.jackpot,
+        users           = jackpot.users,
+        minPlayers      = jackpot.minPlayersRequired,
+        userInfo        = getUserObjectById(this.userId),
+        bidContainer    = this.jackpot.bidContainer,
+        bidsByUser      = bidContainer.getAllBids(this.userId),
+        lastBidUserId   = bidContainer.getLastBidUserId(),
+        room            = this.jackpot.getRoomName(),
+        namespace       = global.ticktockGameState.jackpotSocketNs;
+
+    // Emit Me Joined
+    socket.emit(EVT_EMIT_JACKPOT_GAME_JOINED, {
+        jackpotInfo:    {
+            uniqueId:    jackpot.uniqueId,
+            name:        jackpot.title,
+            amount:      convertAmountToCommaString(jackpot.jackpotAmount)
+        },
+        userInfo: {
+            name:               userInfo.name,
+            availableBids:      this.availableBids['jackpot'],
+            totalPlacedBids:    bidsByUser.length,
+        }
+    });
+
+    // Emit Can I Bid
+    if(users.length < minPlayers)
+    {
+        namespace.in(room).emit(EVT_EMIT_JACKPOT_CAN_I_BID, {canIBid: false});
+    }
+    else
+    {
+        socket.emit(EVT_EMIT_JACKPOT_CAN_I_BID, {
+            canIBid: (lastBidUserId != this.userId)
+        });
+    }
+
+    jackpot.emitUpdatesToItsRoom();
+}
+
+
+JackpotUser.prototype.afterJoinBattle = function(socket, level, game)
+{
+    var evtJoined,
+        evtShowBidBtn,
+        evtHideBidBtn,
+        evtShowQuitBtn,
+        gameNotStarted,
+        lastBidUserId,
+        availableBids,
+        totalPlacedBids;
+
+    if(level.constructor.name == 'NormalBattleLevel')
+    {
+        evtJoined       = EVT_EMIT_NORMAL_BATTLE_JOINED;
+        evtShowBidBtn   = EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID;
+        evtHideBidBtn   = EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID;
+        evtShowQuitBtn  = EVT_EMIT_NORMAL_BATTLE_SHOW_QUIT_BUTTON;
+        availableBids   = this.getNormalBattleAvailableBids(level, game);
+        totalPlacedBids = this.getNormalBattlePlacedBids(level, game).length;
+    }
+    else if(level.constructor.name == 'AdvanceBattleLevel')
+    {
+        evtJoined       = EVT_EMIT_ADVANCE_BATTLE_JOINED;
+        evtShowBidBtn   = EVT_EMIT_ADVANCE_BATTLE_SHOW_PLACE_BID;
+        evtHideBidBtn   = EVT_EMIT_ADVANCE_BATTLE_HIDE_PLACE_BID;
+        evtShowQuitBtn  = EVT_EMIT_ADVANCE_BATTLE_SHOW_QUIT_BUTTON;
+        availableBids   = this.getAdvanceBattleAvailableBids(level, game);
+        totalPlacedBids = this.getAdvanceBattlePlacedBids(level, game).length;
+    }
+
+    // Emit Joined Event
+    socket.emit(evtJoined, {
+        jackpotInfo:    this.jackpot.getBasicInfo(),
+        levelInfo:      level.getBasicInfo(),
+        myInfo: {
+            userId          : this.userId,
+            name            : getUserObjectById(this.userId).name,
+            availableBids   : availableBids,
+            totalPlacedBids : totalPlacedBids
+        },
+        gameInfo: {
+            duration : game.getClock('game').getFormattedRemaining(),
+            uniqueId : game.uniqueId
+        },
+        players             : game.getAllPlayersList(),
+        currentBidDuration  : game.bidContainer.getLastBidDuration(true),
+        currentBidUser      : game.bidContainer.getLastBidUserName(),
+        longestBidDuration  : game.bidContainer.getLongestBidDuration(true),
+        longestBidUser      : game.bidContainer.getLongestBidUserName()
+    });
+
+    // Now start the game
+    game.startGame();
+
+    // Show hide place bid button
+    gameNotStarted  = game.isNotStarted(),
+    lastBidUserId   = game.bidContainer.getLastBidUserId();
+
+    if(gameNotStarted || (lastBidUserId != null && lastBidUserId == this.userId))
+    {
+        socket.emit(evtHideBidBtn);
+    }
+    else
+    {
+        socket.emit(evtShowBidBtn);
+    }
+
+    // Show Quit Button
+    if(game.isNotStarted())
+    {
+        socket.emit(evtShowQuitBtn, {status: true});
+    }
+
+    // Emit updates to game room
+    game.emitUpdatesToItsRoom(socket);
+}
+
+
+/**
+ * All Quit Jackpot, Normal Battle, Advance Battle Game related
+ * function here
+ */
+
+JackpotUser.prototype.quitJackpotGame = function(socket)
+{
+    this.userGameStatus = 'QUITTED';
+
+    socket.emit(EVT_EMIT_JACKPOT_GAME_QUITTED, {status: true});
+
+    this.jackpot.emitUpdatesToItsRoom();
+}
+
+JackpotUser.prototype.quitNormalBattleGame = function(socket, level, game)
+{
+    var removed = game.removeUser(this);
+
+    if(removed)
+    {
+        socket.emit(EVT_EMIT_NORMAL_BATTLE_GAME_QUITTED);
+
+        game.emitUpdatesToItsRoom(socket);
+    }
+}
+
+JackpotUser.prototype.quitAdvanceBattleGame = function(socket, level, game)
+{
+    var removed = game.removeUser(this);
+
+    if(removed)
+    {
+        socket.emit(EVT_EMIT_ADVANCE_BATTLE_GAME_QUITTED);
+
+        game.emitUpdatesToItsRoom(socket);
+    }
+}
+
 
 /**
  * The below are only Bid Related function to get anytime jackpot,
@@ -180,6 +264,7 @@ JackpotUser.prototype.getNormalBattleTotalWinnings = function(level)
  * well as set default available bids and placed bids. Also increase
  * or decrease the available and placed bids for all of them
  */
+
 
 JackpotUser.prototype.setJackpotAvailableBids = function(bids)
 {

@@ -48,6 +48,16 @@ BattleGame.prototype.addUser = function(user)
 	return user;
 }
 
+BattleGame.prototype.removeUser = function(user)
+{
+    if(_.remove(this.users, {userId: user.userId}))
+    {
+        return true;
+    }
+
+    return false;
+}
+
 BattleGame.prototype.hasUser = function(user)
 {
 	var user = this.getUser(user);

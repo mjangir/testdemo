@@ -393,4 +393,13 @@ Jackpot.prototype.fireForBattleOnEverySecond = function()
     }
 }
 
+Jackpot.prototype.getBasicInfo = function()
+{
+    return {
+        uniqueId:    this.uniqueId,
+        name:        this.title,
+        amount:      convertAmountToCommaString(this.jackpotAmount)
+    };
+}
+
 export default Jackpot;

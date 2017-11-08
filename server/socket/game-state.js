@@ -3,7 +3,10 @@
 import logger from '../utils/logger';
 import moment from 'moment';
 import sqldb from '../sqldb';
+import config from '../config/environment';
 import JackpotState from './state/jackpot/jackpot';
+import _ from 'lodash';
+import url from 'url';
 
 const SettingsModel             = sqldb.Settings;
 const JackpotModel              = sqldb.Jackpot;
@@ -111,6 +114,43 @@ function getSimplifiedSettings(settings)
 }
 
 /**
+ * Get User Photo
+ *
+ * @param  {Object} user
+ * @return {String}
+ */
+function getUserPhoto(user)
+{
+    const photo     = user.photo != null ? 'uploads/'+user.photo : 'images/avatar.jpg';
+    const avatarUrl = url.format({
+        protocol:   config.protocol,
+        hostname:   config.ip,
+        port:       config.port,
+        pathname:   photo,
+    });
+    return avatarUrl;
+}
+
+/**
+ * Get Simplified Users
+ *
+ * @param  {Array} users
+ * @return {[type]}       [description]
+ */
+function getSimplifiedUsers(users)
+{
+    users = _.map(users).map(function(user)
+    {
+        return _.assign(user,
+        {
+            photo: getUserPhoto(user)
+        });
+    });
+
+    return users;
+}
+
+/**
  * Create Global Game State
  *
  * @param  {Socket.IO} socketio
@@ -124,12 +164,12 @@ export default function(socketio)
     {
         global.ticktockGameState.settings = getSimplifiedSettings(settings);
         return getAllUsers();
-    
+
     }).then(function(users)
     {
-        global.ticktockGameState.users = users;
+        global.ticktockGameState.users = getSimplifiedUsers(users);
         return getAllJackpots();
-    
+
     }).then(function(jackpots)
     {
         const simplified = getSimplifiedJackpots(jackpots);

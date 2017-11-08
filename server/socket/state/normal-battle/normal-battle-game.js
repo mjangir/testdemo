@@ -11,7 +11,8 @@ import {
 	EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID,
 	EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID,
 	EVT_EMIT_NORMAL_BATTLE_GAME_ABOUT_TO_START,
-	EVT_EMIT_NORMAL_BATTLE_TIMER
+	EVT_EMIT_NORMAL_BATTLE_TIMER,
+	EVT_EMIT_NORMAL_BATTLE_HIDE_QUIT_BUTTON
 } from '../../constants';
 
 const avatarUrl = url.format({
@@ -45,7 +46,7 @@ NormalBattleGame.prototype.getAllPlayersList = function()
 	for(var k in users)
 	{
 		user 			= users[k];
-		name 			= getUserObjectById(user.userId).name;
+		userObj 		= getUserObjectById(user.userId);
 		placedBids 		= user.getNormalBattlePlacedBids(this.level, this).length;
 		availableBids 	= user.getNormalBattleAvailableBids(this.level, this);
 		remainingBids 	= availableBids - placedBids;
@@ -53,8 +54,8 @@ NormalBattleGame.prototype.getAllPlayersList = function()
 		players.push({
 			id 				: user.userId,
 			userId 			: user.userId,
-			name 			: name,
-			picture 		: avatarUrl,
+			name 			: userObj.name,
+			picture 		: user.photo,
 			totalBids 		: placedBids,
 			remainingBids 	: remainingBids
 		});
@@ -95,6 +96,7 @@ NormalBattleGame.prototype.startGame = function()
 	                context.gameStatus = 'STARTED';
 	                socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_GAME_STARTED, {status: true});
 	                socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID, {status: true});
+	                socketNs.in(room).emit(EVT_EMIT_NORMAL_BATTLE_HIDE_QUIT_BUTTON, {status: true});
 	                clearInterval(interval);
 	            }
 	            else
