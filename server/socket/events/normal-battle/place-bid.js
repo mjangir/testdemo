@@ -2,7 +2,7 @@
 
 import isJackpotExist from '../../utils/is-jackpot-exist';
 import getUserBattleGame from '../../utils/get-user-bid-battle-game';
-import joinUserToBidBattle from '../../utils/join-user-to-bid-battle';
+import joinUserToBidBattle from '../../utils/join-user-to-bid-battle-game';
 import BattleLevel from '../../state/common/battle-level';
 import BattleGame from '../../state/common/battle-game';
 

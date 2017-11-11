@@ -1,8 +1,8 @@
 'use strict';
 
 import isJackpotExist from '../../utils/is-jackpot-exist';
-import getUserBattleGame from '../../utils/get-user-bid-battle-game';
-import joinUserToBidBattle from '../../utils/join-user-to-bid-battle';
+import getUserBidBattleGame from '../../utils/get-user-bid-battle-game';
+import joinUserToBidBattleGame from '../../utils/join-user-to-bid-battle-game';
 import BattleLevel from '../../state/common/battle-level';
 
 function handleJoinBattle(socket, data)
@@ -27,7 +27,7 @@ function handleJoinBattle(socket, data)
     	return;
     }
 
-    gotBattleGame = getUserBattleGame(battleLevel, user);
+    gotBattleGame = getUserBidBattleGame(battleLevel, user);
 
     if(gotBattleGame == false)
     {
@@ -36,7 +36,7 @@ function handleJoinBattle(socket, data)
 
     gotBattleGame.then(function(data)
     {
-        joinUserToBidBattle(data.level, data.user, data.game, socket, data);
+        joinUserToBidBattleGame(data.level, data.user, data.game, socket, data);
     });
 }
 
