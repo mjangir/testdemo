@@ -5,18 +5,12 @@ import getUserBattleGame from '../../utils/get-user-bid-battle-game';
 import joinUserToBidBattle from '../../utils/join-user-to-bid-battle-game';
 import BattleLevel from '../../state/common/battle-level';
 import BattleGame from '../../state/common/battle-game';
-import {
-    EVT_EMIT_SOMETHING_WENT_WRONG
+
+import { 
+    EVT_EMIT_NO_ENOUGH_BIDS
 } from '../../constants';
 
-/**
- * Handle Quit Game
- *
- * @param  {Socket} socket
- * @param  {Object} data
- * @return {*}
- */
-function handleQuitGame(socket, data)
+function handlePlacebid(socket, data)
 {
     var jackpot,
         user,
@@ -29,36 +23,39 @@ function handleQuitGame(socket, data)
         return;
     }
 
-    // Get jackpot, user and level through socket data
-    jackpot     = isJackpotExist(data.jackpotUniqueId);
+    jackpot 	= isJackpotExist(data.jackpotUniqueId);
     user        = jackpot.getUserById(data.userId);
     battleLevel = jackpot.getNormalBattleLevelById(data.levelUniqueId);
 
-    // If level is not valid BattleLevel
     if(!(battleLevel instanceof BattleLevel))
     {
-        socket.emit(EVT_EMIT_SOMETHING_WENT_WRONG);
-        return;
+    	return;
     }
 
-    // Get the existing game of the user
     battleGame = battleLevel.getGameByUniqueId(data.gameUniqueId);
 
-    // Game is not valid BattleGame
     if(!(battleGame instanceof BattleGame))
     {
-        socket.emit(EVT_EMIT_SOMETHING_WENT_WRONG);
+    	return;
+    }
+
+    if(user.getNormalBattleAvailableBids(battleLevel, battleGame) <= 0)
+    {
+        user.emitNoEnoughNormalBattleBids(socket, battleLevel, battleGame);
         return;
     }
 
-    // Quit The Game
-    user.quitNormalBattleGame(socket, battleLevel, battleGame);
+    if(battleGame.isStarted())
+    {
+        // Place the bid in corresponding user account
+        bid = battleGame.placeBid(data.userId, socket);
+    }
 }
 
 export default function(socket)
 {
-    return function(data)
-    {
-        handleQuitGame(socket, data);
-    }
+	return function(data)
+	{
+		handlePlacebid(socket, data);
+	}
 }

@@ -52,13 +52,13 @@ function handleQuitGame(socket, data)
     }
 
     // Quit The Game
-    user.quitNormalBattleGame(socket, battleLevel, battleGame);
+    user.quitAdvanceBattleGame(socket, battleLevel, battleGame);
 }
 
 export default function(socket)
 {
-    return function(data)
-    {
-        handleQuitGame(socket, data);
-    }
+	return function(data)
+	{
+		handleQuitGame(socket, data);
+	}
 }

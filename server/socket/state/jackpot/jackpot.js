@@ -241,6 +241,16 @@ Jackpot.prototype.getAdvanceBattleLevelById = function(uniqueId)
     return _.find(this.advanceBattleLevels, {uniqueId: uniqueId});
 }
 
+Jackpot.prototype.getNormalBattleLevelByOrder = function(order)
+{
+    return _.find(this.normalBattleLevels, {order: order});
+}
+
+Jackpot.prototype.getAdvanceBattleLevelByOrder = function(order)
+{
+    return _.find(this.advanceBattleLevels, {order: order});
+}
+
 Jackpot.prototype.getNormalBattleLevels = function()
 {
     return _.sortBy(this.normalBattleLevels, 'order');

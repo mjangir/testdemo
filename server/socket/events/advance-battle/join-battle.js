@@ -5,7 +5,7 @@ import getUserBidBattleGame from '../../utils/get-user-bid-battle-game';
 import joinUserToBidBattleGame from '../../utils/join-user-to-bid-battle-game';
 import BattleLevel from '../../state/common/battle-level';
 import {
-    EVT_EMIT_NORMAL_BATTLE_NOT_ELIGIBLE_TO_JOIN,
+    EVT_EMIT_ADVANCE_BATTLE_NOT_ELIGIBLE_TO_JOIN,
     EVT_EMIT_SOMETHING_WENT_WRONG
 } from '../../constants';
 
@@ -23,7 +23,7 @@ function handleJoinBattle(socket, data)
     }
 
     // Get jackpot, user and battle level through socket data
-    jackpot     = isJackpotExist(data.jackpotUniqueId);
+    jackpot 	= isJackpotExist(data.jackpotUniqueId);
     user        = jackpot.getUserById(data.userId);
     battleLevel = jackpot.getNormalBattleLevelById(data.levelUniqueId);
 
@@ -31,13 +31,13 @@ function handleJoinBattle(socket, data)
     if(!(battleLevel instanceof BattleLevel))
     {
         socket.emit(EVT_EMIT_SOMETHING_WENT_WRONG);
-        return;
+    	return;
     }
 
     // If user is not able to join the level
     if(!battleLevel.isUserAbleToJoin(user))
     {
-        socket.emit(EVT_EMIT_NORMAL_BATTLE_NOT_ELIGIBLE_TO_JOIN);
+        socket.emit(EVT_EMIT_ADVANCE_BATTLE_NOT_ELIGIBLE_TO_JOIN);
         return;
     }
 
@@ -60,8 +60,8 @@ function handleJoinBattle(socket, data)
 
 export default function(socket)
 {
-    return function(data)
-    {
-        handleJoinBattle(socket, data);
-    }
+	return function(data)
+	{
+		handleJoinBattle(socket, data);
+	}
 }
