@@ -80,7 +80,9 @@ AdvanceBattleLevel.prototype.getBasicInfo = function()
 {
 	return {
         uniqueId    : this.uniqueId,
-        levelName   : this.levelName
+        levelName   : this.levelName,
+        prizeValue  : this.minPlayersRequired * this.minBidsToGamb,
+        prizeType   : 'BID'
     };
 }
 

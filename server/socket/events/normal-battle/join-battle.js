@@ -28,7 +28,7 @@ function handleJoinBattle(socket, data)
     battleLevel = jackpot.getNormalBattleLevelById(data.levelUniqueId);
 
     // If level is not a valid BattleLevel
-    if(!(battleLevel instanceof BattleLevel))
+    if(battleLevel.constructor.name != 'NormalBattleLevel')
     {
         socket.emit(EVT_EMIT_SOMETHING_WENT_WRONG);
         return;

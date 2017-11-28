@@ -25,10 +25,10 @@ function handleJoinBattle(socket, data)
     // Get jackpot, user and battle level through socket data
     jackpot 	= isJackpotExist(data.jackpotUniqueId);
     user        = jackpot.getUserById(data.userId);
-    battleLevel = jackpot.getNormalBattleLevelById(data.levelUniqueId);
+    battleLevel = jackpot.getAdvanceBattleLevelById(data.levelUniqueId);
 
     // If level is not a valid BattleLevel
-    if(!(battleLevel instanceof BattleLevel))
+    if(battleLevel.constructor.name != 'AdvanceBattleLevel')
     {
         socket.emit(EVT_EMIT_SOMETHING_WENT_WRONG);
     	return;

@@ -1,8 +1,6 @@
 'use strict'
 
 import BattleGame from '../common/battle-game';
-import JackpotUser from '../jackpot/jackpot-user';
-import { getUserObjectById } from '../../../utils/functions';
 
 function AdvanceBattleGame(level)
 {
