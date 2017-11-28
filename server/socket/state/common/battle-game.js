@@ -1,8 +1,8 @@
 'use strict';
 
-import { 
-	generateRandomString, 
-	convertAmountToCommaString, 
+import {
+	generateRandomString,
+	convertAmountToCommaString,
 	getUserObjectById
 } from '../../../utils/functions';
 import CommonGame from './game';
@@ -30,7 +30,7 @@ import {
 
 /**
  * Constructor
- * 
+ *
  * @param {BattleLevel} level
  * @return {*}
  */
@@ -47,7 +47,7 @@ function BattleGame(level)
 
 /**
  * Override Prototype
- * 
+ *
  * @type {Object}
  */
 BattleGame.prototype = Object.create(CommonGame.prototype);
@@ -55,7 +55,7 @@ BattleGame.prototype = Object.create(CommonGame.prototype);
 
 /**
  * Start Battle Level Game
- * 
+ *
  * @return {*}
  */
 BattleGame.prototype.startGame = function()
@@ -138,7 +138,7 @@ BattleGame.prototype.setTimeclocks = function()
 
 /**
  * Get All Users Of The Game
- * 
+ *
  * @return {*}
  */
 BattleGame.prototype.getAllUsers = function()
@@ -149,7 +149,7 @@ BattleGame.prototype.getAllUsers = function()
 
 /**
  * Add User To Battle Game
- * 
+ *
  * @param {JackpotUser} user
  * @return {*}
  */
@@ -168,7 +168,7 @@ BattleGame.prototype.addUser = function(user)
 
 /**
  * Remove User From Game
- * 
+ *
  * @param  {JackpotUser} user
  * @return {*}
  */
@@ -185,7 +185,7 @@ BattleGame.prototype.removeUser = function(user)
 
 /**
  * Check If Game Has Certain User
- * 
+ *
  * @param  {JackpotUser}  user
  * @return {Boolean}
  */
@@ -232,7 +232,14 @@ BattleGame.prototype.countDown = function()
 
 BattleGame.prototype.finishGame = function()
 {
-	// TO DO
+	var lastBidDuration  	= this.bidContainer.getLastBidDuration(true),
+	    lastBidUserId  		= this.bidContainer.getLastBidUserId(),
+	    longestBidDuration  = this.bidContainer.getLongestBidDuration(true),
+	    longestBidUserId  	= this.bidContainer.getLongestBidUserId(),
+	    bothAreSame 		= lastBidUserId === longestBidUserId;
+
+	// Set The Game Status
+	this.gameStatus = 'STARTED';
 }
 
 BattleGame.prototype.emitTimerUpdates = function()
