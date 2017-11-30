@@ -232,14 +232,81 @@ BattleGame.prototype.countDown = function()
 
 BattleGame.prototype.finishGame = function()
 {
-	var lastBidDuration  	= this.bidContainer.getLastBidDuration(true),
+	var lastBidDuration  	= this.bidContainer.getLastBidDuration(),
 	    lastBidUserId  		= this.bidContainer.getLastBidUserId(),
-	    longestBidDuration  = this.bidContainer.getLongestBidDuration(true),
+	    longestBidDuration  = this.bidContainer.getLongestBidDuration(),
 	    longestBidUserId  	= this.bidContainer.getLongestBidUserId(),
-	    bothAreSame 		= lastBidUserId === longestBidUserId;
+	    bothAreSame 		= lastBidUserId === longestBidUserId,
+	    lastBidUser 		= lastBidUserId != null ? this.getUser(lastBidUserId) : null,
+	    longestBidUser 		= longestBidUserId != null ? this.getUser(longestBidUserId) : null,
+	    excluedUserIds 		= [];
 
-	// Set The Game Status
-	this.gameStatus = 'STARTED';
+	if(lastBidUser instanceof JackpotUser && longestBidUser instanceof JackpotUser)
+	{
+		winners = bothAreSame ? [lastBidUserId] : [lastBidUserId, longestBidUserId];
+		this.updateUserInstanceOnFinish(winners);
+	}
+	else if(lastBidUser instanceof JackpotUser && !(longestBidUser instanceof JackpotUser))
+	{
+		this.updateUserInstanceOnFinish([lastBidUser]);
+	}
+	else if(longestBidUser instanceof JackpotUser && !(lastBidUser instanceof JackpotUser))
+	{
+		this.updateUserInstanceOnFinish([longestBidUser]);
+	}
+	else
+	{
+
+	}
+
+	// Set The Game Status FINISHED
+	this.gameStatus = 'FINISHED';
+
+}
+
+BattleGame.prototype.updateUserInstanceOnFinish = function(winners)
+{
+	var lastWinnerPrize 	= this.level.getLastBidWinnerPrize(),
+	    longestWinnerPrize 	= this.level.getLongestBidWinnerPrize(),
+	    singleWinnerPrize 	= this.level.getSingleWinnerPrize(),
+	    users 				= this.getAllUsers();
+
+	if(winners.length > 0)
+	{
+		if(winners.length == 1)
+		{
+			winners[0].increaseJackpotAvailableBids(singleWinnerPrize);
+			winners[0].updateBattleWinsArray(this.getPostFinishObject('WINNER'));
+		}
+		else if(winners.length == 2)
+		{
+			winners[0].increaseJackpotAvailableBids(lastWinnerPrize);
+			winners[1].increaseJackpotAvailableBids(longestWinnerPrize);
+			winners[0].updateBattleWinsArray(this.getPostFinishObject('WINNER'));
+			winners[1].updateBattleWinsArray(this.getPostFinishObject('WINNER'));
+		}
+
+		for(var k in users)
+	    {
+	        if(winners.indexOf(users[k].userId) <= -1)
+	        {
+	        	users[k].updateBattleWinsArray(this.getPostFinishObject('LOOSER'));
+	            users[k].jackpotUser.currentSocket.emit(EVT_EMIT_UPDATE_HOME_JACKPOT_BATTLE_INFO, {
+	                battleWins: this.users[k].jackpotUser.totalNormalBattleWins + this.users[k].jackpotUser.totalGamblingBattleWins,
+	                battleStreak: this.users[k].jackpotUser.getNormalBattleCurrentStreak()
+	            });
+	        }
+	    }
+	}
+}
+
+BattleGame.prototype.getPostFinishObject = function(status)
+{
+	return {
+		gameUniqueGameId: this.uniqueId,
+		levelUniqueId 	: this.level.uniqueId,
+		winStatus 		: status
+	};
 }
 
 BattleGame.prototype.emitTimerUpdates = function()

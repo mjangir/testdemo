@@ -22,8 +22,8 @@ function NormalBattleLevel(jackpot, data)
 	this.incrementSecondsOnBid 		= data.incrementSeconds;
 	this.prizeBids 					= data.prizeValue;
 	this.defaultAvailableBids 		= data.defaultAvailableBids;
-	this.lastBidWinnerPercent 		= data.lastBidWinnerPercent;
-	this.longestBidWinnerPercent 	= data.longestBidWinnerPercent;
+	this.lastBidWinnerPercent 		= data.lastBidWinnerPercent ? data.lastBidWinnerPercent : 50;
+	this.longestBidWinnerPercent 	= data.longestBidWinnerPercent ? data.longestBidWinnerPercent : 50;
 	this.minPlayersRequired 		= data.minPlayersRequiredToStart;
 	this.minWinsToUnlockNext 		= data.minWinsToUnlockNextLevel;
 	this.isLastLevel 				= data.isLastLevel;
@@ -100,6 +100,11 @@ NormalBattleLevel.prototype.getBasicInfo = function()
         prizeValue  : this.prizeBids,
         prizeType   : 'BID'
     };
+}
+
+NormalBattleLevel.prototype.getPrizeValue = function()
+{
+	return this.prizeBids;
 }
 
 export default NormalBattleLevel;

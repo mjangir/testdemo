@@ -86,4 +86,9 @@ AdvanceBattleLevel.prototype.getBasicInfo = function()
     };
 }
 
+AdvanceBattleLevel.prototype.getPrizeValue = function()
+{
+	return this.minPlayersRequired * this.minBidsToGamb;
+}
+
 export default AdvanceBattleLevel;

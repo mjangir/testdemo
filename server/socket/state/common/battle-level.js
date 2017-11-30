@@ -100,4 +100,27 @@ BattleLevel.prototype.fireOnEverySecond = function()
 	}
 }
 
+BattleLevel.prototype.getLastBidWinnerPrize = function()
+{
+	var prizeValue 	= this.getPrizeValue(),
+		percent 	= parseFloat(this.lastBidWinnerPercent, 10),
+		percent 	= !isNaN(percent) ? percent : 100;
+
+	return parseInt((percent/100 * prizeValue), 10);
+}
+
+BattleLevel.prototype.getLongestBidWinnerPrize = function()
+{
+	var prizeValue 	= this.getPrizeValue(),
+		percent 	= parseFloat(this.longestBidWinnerPercent, 10),
+		percent 	= !isNaN(percent) ? percent : 100;
+
+	return parseInt((percent/100 * prizeValue), 10);
+}
+
+BattleLevel.prototype.getSingleWinnerPrize = function()
+{
+	return this.getPrizeValue();
+}
+
 export default BattleLevel;
