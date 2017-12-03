@@ -9,8 +9,10 @@ import * as constants from '../../config/constants';
 import NormalBattleContainer from '../../sockets/state/normal-battle';
 import GamblingBattleContainer from '../../sockets/state/gambling-battle';
 import createConnectionAgain from '../../sockets/events/jackpot/connect';
+import JackpotState from '../../socket/game-state';
 
-var Jackpot = sqldb.Jackpot;
+var Jackpot             = sqldb.Jackpot;
+var JackpotBattleLevel  = sqldb.JackpotBattleLevel;
 
 
 /**
@@ -311,20 +313,41 @@ exports.insertInSocket = function(req, res)
   {
     if(entity)
     {
-      var globalJackpotState  = global.globalJackpotSocketState,
-          jackpot             = entity.get({plain: true});
-
-        globalJackpotState.addJackpot(jackpot);
-
-        var connected = findClientsSocket(null, global.jackpotSocketNamespace);
-
-        if(connected.length)
-        {
-            for(var k in connected)
-            {
-                createConnectionAgain(connected[k]);
-            }
+      var newJp = Jackpot.find({
+        attributes: [
+            'id',
+            'title',
+            'amount',
+            'minPlayersRequired',
+            'gameClockTime',
+            'doomsDayTime',
+            'increaseAmountSeconds',
+            'increaseAmount',
+            'gameStatus',
+            'uniqueId',
+            'status'
+        ],
+        order: [
+            ['id', 'ASC']
+        ],
+        include: [ { model: JackpotBattleLevel, as: 'JackpotBattleLevels'} ],
+        where: {
+          id: entity.id
         }
+      }).then(function(jp)
+      {
+        global.ticktockGameState.jackpots.push(new JackpotState(jp.get({plain: true})));
+      });
+
+        // var connected = findClientsSocket(null, global.jackpotSocketNamespace);
+
+        // if(connected.length)
+        // {
+        //     for(var k in connected)
+        //     {
+        //         createConnectionAgain(connected[k]);
+        //     }
+        // }
 
         res.status(200).json({
           status: 'success',
