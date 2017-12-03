@@ -35,7 +35,7 @@ function handleJoinBattle(socket, data)
     }
 
     // If user is not able to join the level
-    if(!battleLevel.isUserAbleToJoin(user))
+    if(!battleLevel.hasUserExistingGame(user) && !battleLevel.isUserAbleToJoin(user))
     {
         socket.emit(EVT_EMIT_ADVANCE_BATTLE_NOT_ELIGIBLE_TO_JOIN);
         return;

@@ -25,9 +25,9 @@ function handlePlacebid(socket, data)
 
     jackpot 	= isJackpotExist(data.jackpotUniqueId);
     user        = jackpot.getUserById(data.userId);
-    battleLevel = jackpot.getNormalBattleLevelById(data.levelUniqueId);
+    battleLevel = jackpot.getAdvanceBattleLevelById(data.levelUniqueId);
 
-    if(!(battleLevel instanceof BattleLevel))
+    if(battleLevel.constructor.name != 'AdvanceBattleLevel')
     {
     	return;
     }
@@ -39,9 +39,9 @@ function handlePlacebid(socket, data)
     	return;
     }
 
-    if(user.getNormalBattleAvailableBids(battleLevel, battleGame) <= 0)
+    if(user.getAdvanceBattleAvailableBids(battleLevel, battleGame) <= 0)
     {
-        user.emitNoEnoughNormalBattleBids(socket, battleLevel, battleGame);
+        user.emitNoEnoughAdvanceBattleBids(socket, battleLevel, battleGame);
         return;
     }
 

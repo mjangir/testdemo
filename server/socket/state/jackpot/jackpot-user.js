@@ -20,7 +20,10 @@ import {
     EVT_EMIT_ADVANCE_BATTLE_HIDE_PLACE_BID,
     EVT_EMIT_ADVANCE_BATTLE_BID_PLACED,
     EVT_EMIT_ADVANCE_BATTLE_SHOW_QUIT_BUTTON,
-    EVT_EMIT_ADVANCE_BATTLE_GAME_QUITTED
+    EVT_EMIT_ADVANCE_BATTLE_GAME_QUITTED,
+
+    EVT_EMIT_JACKPOT_AVAILABLE_BID_ON_BATTLE_WIN,
+    EVT_EMIT_JACKPOT_UPDATE_BATTLE_STREAK
 } from '../../constants';
 
 import {
@@ -262,7 +265,6 @@ JackpotUser.prototype.afterJoinAdvanceBattle = function(socket, level, game)
         evtShowBidBtn   = EVT_EMIT_ADVANCE_BATTLE_SHOW_PLACE_BID,
         evtHideBidBtn   = EVT_EMIT_ADVANCE_BATTLE_HIDE_PLACE_BID,
         evtShowQuitBtn  = EVT_EMIT_ADVANCE_BATTLE_SHOW_QUIT_BUTTON,
-        evtMyJpInfo     = EVT_EMIT_JACKPOT_MY_INFO_CHANGED,
         availableBids   = this.getAdvanceBattleAvailableBids(level, game),
         totalPlacedBids = this.getAdvanceBattlePlacedBids(level, game).length,
         lastBidUserId   = game.bidContainer.getLastBidUserId();
@@ -287,17 +289,6 @@ JackpotUser.prototype.afterJoinAdvanceBattle = function(socket, level, game)
         longestBidDuration  : game.bidContainer.getLongestBidDuration(true),
         longestBidUser      : game.bidContainer.getLongestBidUserName()
     });
-
-    // Deduct user's jackpot available bids required to join the game
-    if(this.getJackpotAvailableBids() >= level.minBidsToGamb)
-    {
-        this.decreaseJackpotAvailableBids(level.minBidsToGamb);
-        socket.emit(evtMyJpInfo, {
-            name            : getUserObjectById(this.userId).name,
-            availableBids   : this.getJackpotAvailableBids(),
-            totalPlacedBids : this.getJackpotPlacedBids(),
-        });
-    }
 
     // Now start the game
     game.startGame();
@@ -531,7 +522,7 @@ JackpotUser.prototype.getNormalBattleAvailableBids = function(level, game)
     }
     if(!availableBids[level.uniqueId].hasOwnProperty(game.uniqueId))
     {
-        availableBids[level.uniqueId][game.uniqueId] = [];
+        availableBids[level.uniqueId][game.uniqueId] = level.defaultAvailableBids;
     }
     return availableBids[level.uniqueId][game.uniqueId];
 }
@@ -546,7 +537,7 @@ JackpotUser.prototype.getAdvanceBattleAvailableBids = function(level, game)
     }
     if(!availableBids[level.uniqueId].hasOwnProperty(game.uniqueId))
     {
-        availableBids[level.uniqueId][game.uniqueId] = [];
+        availableBids[level.uniqueId][game.uniqueId] = level.defaultAvailableBids;
     }
     return availableBids[level.uniqueId][game.uniqueId];
 }
@@ -770,6 +761,17 @@ JackpotUser.prototype.afterPlacedAdvanceBattleBid = function(bidContainer, game,
     var level = game.level;
     this.decreaseAdvanceBattleAvailableBids(level, game);
     this.increaseAdvanceBattlePlacedBids(level, game, bid);
+
+    socket.emit(EVT_EMIT_ADVANCE_BATTLE_BID_PLACED, {
+      availableBids:          this.getAdvanceBattleAvailableBids(level, game),
+      totalPlacedBids:        this.getAdvanceBattlePlacedBids(level, game).length
+  });
+
+  socket.emit(EVT_EMIT_ADVANCE_BATTLE_HIDE_PLACE_BID, {status: true});
+
+  socket.broadcast.in(game.getRoomName()).emit(EVT_EMIT_ADVANCE_BATTLE_SHOW_PLACE_BID, {status: true});
+
+  game.emitUpdatesToItsRoom();
 }
 
 JackpotUser.prototype.emitNoEnoughJackpotBids = function(socket)
@@ -788,6 +790,133 @@ JackpotUser.prototype.emitNoEnoughNormalBattleBids = function(socket, level, gam
     socket.emit(EVT_EMIT_NORMAL_BATTLE_HIDE_PLACE_BID, {status: true});
 
     socket.broadcast.in(game.getRoomName()).emit(EVT_EMIT_NORMAL_BATTLE_SHOW_PLACE_BID, {status: true});
+}
+
+JackpotUser.prototype.emitNoEnoughAdvanceBattleBids = function(socket, level, game)
+{
+    socket.emit(EVT_EMIT_NO_ENOUGH_BIDS);
+
+    socket.emit(EVT_EMIT_ADVANCE_BATTLE_HIDE_PLACE_BID, {status: true});
+
+    socket.broadcast.in(game.getRoomName()).emit(EVT_EMIT_ADVANCE_BATTLE_SHOW_PLACE_BID, {status: true});
+}
+
+
+/**
+ * After Battle Game Finished Functions
+ * Update the streaks, winnings and looses on user
+ */
+JackpotUser.prototype.afterBattleGameFinished = function(game, level, status, prize)
+{
+    var winsArr = level.constructor.name == 'NormalBattleLevel' ? this.battleWins['normalBattle'] : this.battleWins['advanceBattle'],
+        bothBattleWins,
+        battleStreakData;
+
+    if(status == 'WINNER')
+    {
+        this.increaseJackpotAvailableBids(prize);
+        this.currentSocket.emit(EVT_EMIT_JACKPOT_AVAILABLE_BID_ON_BATTLE_WIN, {
+          availableBids: this.getJackpotAvailableBids()
+        });
+    }
+
+    winsArr.push({
+        gameUniqueId    : game.uniqueId,
+        levelUniqueId   : level.uniqueId,
+        winningStatus   : status
+    });
+
+    this.currentSocket.emit(EVT_EMIT_JACKPOT_UPDATE_BATTLE_STREAK, {
+      battleWins  : this.getTotalBattleWins(),
+      battleStreak: this.getCurrentBattleStreak()
+    })
+}
+
+JackpotUser.prototype.getTotalNormalBattleWins = function()
+{
+  var records = this.battleWins['normalBattle'].filter(function(item)
+  {
+    return item.winningStatus == 'WINNER';
+  });
+
+  return records.length;
+}
+
+JackpotUser.prototype.getTotalAdvanceBattleWins = function()
+{
+  var records = this.battleWins['advanceBattle'].filter(function(item)
+  {
+    return item.winningStatus == 'WINNER';
+  });
+
+  return records.length;
+}
+
+JackpotUser.prototype.getTotalBattleWins = function()
+{
+  return this.getTotalNormalBattleWins() + this.getTotalAdvanceBattleWins();
+}
+
+JackpotUser.prototype.getTotalNormalBattleLooses = function()
+{
+  var records = this.battleWins['normalBattle'].filter(function(item)
+  {
+    return item.winningStatus == 'LOOSER';
+  });
+
+  return records.length;
+}
+
+JackpotUser.prototype.getTotalAdvanceBattleLooses = function()
+{
+  var records = this.battleWins['advanceBattle'].filter(function(item)
+  {
+    return item.winningStatus == 'LOOSER';
+  });
+
+  return records.length;
+}
+
+JackpotUser.prototype.getTotalBattleLooses = function()
+{
+  return this.getTotalNormalBattleLooses() + this.getTotalAdvanceBattleLooses();
+}
+
+JackpotUser.prototype.getCurrentBattleStreak = function()
+{
+  var bothBattleWins    = this.battleWins['normalBattle'].concat(this.battleWins['advanceBattle']),
+      battleStreakData  = this.getBattleStreakData(bothBattleWins);
+
+  if(bothBattleWins.length == 0 || bothBattleWins[bothBattleWins.length - 1].winningStatus == 'LOOSER')
+  {
+    return 0;
+  }
+
+  if(battleStreakData.length == 0)
+  {
+    return 0;
+  }
+
+  return battleStreakData[battleStreakData.length - 1]['times'];
+}
+
+JackpotUser.prototype.getBattleStreakData = function(input)
+{
+  var output = [];
+
+  for(var k in input)
+  {
+    if (!output[output.length-1] || output[output.length-1].value != input[k].winningStatus)
+    {
+      output.push({value: input[k].winningStatus, times: 1})
+    }
+    else
+    {
+      output[output.length-1].times++;
+    }
+  }
+
+  return _.filter(output, {value: 'WINNER'});
 }
 
 export default JackpotUser;

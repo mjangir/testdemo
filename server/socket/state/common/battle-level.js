@@ -123,4 +123,24 @@ BattleLevel.prototype.getSingleWinnerPrize = function()
 	return this.getPrizeValue();
 }
 
+BattleLevel.prototype.hasUserExistingGame = function(user)
+{
+  var games = this.getAllGames(),
+      game  = false;
+
+	if(games.length > 0)
+	{
+		for(var k in games)
+    {
+      if(games[k].getUser(user) && (games[k].isStarted() || games[k].isNotStarted()))
+      {
+        game = games[k];
+        break;
+      }
+    }
+	}
+
+  return game;
+}
+
 export default BattleLevel;

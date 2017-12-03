@@ -25,7 +25,9 @@ import {
 	EVT_EMIT_ADVANCE_BATTLE_HIDE_PLACE_BID,
 	EVT_EMIT_ADVANCE_BATTLE_HIDE_QUIT_BUTTON,
 	EVT_EMIT_ADVANCE_BATTLE_GAME_ABOUT_TO_START,
-	EVT_EMIT_ADVANCE_BATTLE_UPDATE_PLAYERS
+  EVT_EMIT_ADVANCE_BATTLE_UPDATE_PLAYERS,
+  
+  EVT_EMIT_NORMAL_BATTLE_GAME_FINISHED
 } from '../../constants';
 
 /**
@@ -159,7 +161,8 @@ BattleGame.prototype.addUser = function(user)
 	{
 		this.users.push(user);
 		user.setDefaultBattlePlacedBids(this);
-		user.setDefaultBattleAvailableBids(this);
+    user.setDefaultBattleAvailableBids(this);
+    this.onUserAdded(user);
 	}
 
 	return user;
@@ -232,81 +235,118 @@ BattleGame.prototype.countDown = function()
 
 BattleGame.prototype.finishGame = function()
 {
-	var lastBidDuration  	= this.bidContainer.getLastBidDuration(),
-	    lastBidUserId  		= this.bidContainer.getLastBidUserId(),
-	    longestBidDuration  = this.bidContainer.getLongestBidDuration(),
-	    longestBidUserId  	= this.bidContainer.getLongestBidUserId(),
-	    bothAreSame 		= lastBidUserId === longestBidUserId,
-	    lastBidUser 		= lastBidUserId != null ? this.getUser(lastBidUserId) : null,
-	    longestBidUser 		= longestBidUserId != null ? this.getUser(longestBidUserId) : null,
-	    excluedUserIds 		= [];
+	if(this.getClock('game').remaining <= 0 && this.gameStatus != 'FINISHED')
+	{
+    // Set The Game Status FINISHED
+    this.gameStatus = 'FINISHED';
+    
+		var lastBidDuration  	= this.bidContainer.getLastBidDuration(),
+        lastBidUserId  		= this.bidContainer.getLastBidUserId(),
+        longestBidDuration  = this.bidContainer.getLongestBidDuration(),
+        longestBidUserId  	= this.bidContainer.getLongestBidUserId(),
+        bothAreSame 		= lastBidUserId === longestBidUserId,
+        lastBidUser 		= lastBidUserId != null ? this.getUser(String(lastBidUserId)) : null,
+        longestBidUser 		= longestBidUserId != null ? this.getUser(String(longestBidUserId)) : null,
+        excluedUserIds 		= [],
+        winners,
+        winnerIds,
+        finalData = {status: true};
 
-	if(lastBidUser instanceof JackpotUser && longestBidUser instanceof JackpotUser)
-	{
-		winners = bothAreSame ? [lastBidUserId] : [lastBidUserId, longestBidUserId];
-		this.updateUserInstanceOnFinish(winners);
-	}
-	else if(lastBidUser instanceof JackpotUser && !(longestBidUser instanceof JackpotUser))
-	{
-		this.updateUserInstanceOnFinish([lastBidUser]);
-	}
-	else if(longestBidUser instanceof JackpotUser && !(lastBidUser instanceof JackpotUser))
-	{
-		this.updateUserInstanceOnFinish([longestBidUser]);
-	}
-	else
-	{
+    if(lastBidUser instanceof JackpotUser && longestBidUser instanceof JackpotUser)
+    {
+      winners   = bothAreSame ? [lastBidUser] : [lastBidUser, longestBidUser];
+      winnerIds = bothAreSame ? [String(lastBidUserId)] : [String(lastBidUserId), String(longestBidUserId)];
+      this.updateUserInstanceOnFinish(winners, winnerIds);
+    }
+    else if(lastBidUser instanceof JackpotUser && !(longestBidUser instanceof JackpotUser))
+    {
+      this.updateUserInstanceOnFinish([lastBidUser], [String(lastBidUserId)]);
+    }
+    else if(longestBidUser instanceof JackpotUser && !(lastBidUser instanceof JackpotUser))
+    {
+      this.updateUserInstanceOnFinish([longestBidUser], [String(longestBidUserId)]);
+    }
+    else
+    {
 
-	}
+    }
 
-	// Set The Game Status FINISHED
-	this.gameStatus = 'FINISHED';
+    global.ticktockGameState.jackpotSocketNs.in(this.getRoomName()).emit(
+      EVT_EMIT_NORMAL_BATTLE_GAME_FINISHED,
+      this.buildFinalFinishData(lastBidUser, longestBidUser, bothAreSame)
+    );
+  }
 
 }
 
-BattleGame.prototype.updateUserInstanceOnFinish = function(winners)
+BattleGame.prototype.buildFinalFinishData = function(lastBidUser, longestBidUser, bothAreSame)
+{
+  var finalData = {status: true};
+  
+  // For last bid user
+  if(lastBidUser instanceof JackpotUser)
+  {
+    var lastBidUserInfo = getUserObjectById(lastBidUser.userId);
+
+    finalData.lastBidWinner = {
+      id:           lastBidUserInfo.id,
+      name:         lastBidUserInfo.name,
+      availableBids:lastBidUser.getJackpotAvailableBids()
+    }
+  }
+  else
+  {
+    finalData.lastBidWinner = null
+  }
+
+  // For longest bid user
+  if(longestBidUser instanceof JackpotUser)
+  {
+    var longestBidUserInfo = getUserObjectById(longestBidUser.userId);
+
+    finalData.longestBidWinner = {
+      id:           longestBidUserInfo.id,
+      name:         longestBidUserInfo.name,
+      availableBids:longestBidUser.getJackpotAvailableBids()
+    }
+  }
+  else
+  {
+    finalData.longestBidWinner = null
+  }
+
+  finalData.bothAreSame = bothAreSame;
+
+  return finalData;
+}
+
+BattleGame.prototype.updateUserInstanceOnFinish = function(winners, winnerIds)
 {
 	var lastWinnerPrize 	= this.level.getLastBidWinnerPrize(),
 	    longestWinnerPrize 	= this.level.getLongestBidWinnerPrize(),
 	    singleWinnerPrize 	= this.level.getSingleWinnerPrize(),
-	    users 				= this.getAllUsers();
+      users 				= this.getAllUsers();
 
 	if(winners.length > 0)
 	{
 		if(winners.length == 1)
 		{
-			winners[0].increaseJackpotAvailableBids(singleWinnerPrize);
-			winners[0].updateBattleWinsArray(this.getPostFinishObject('WINNER'));
+			winners[0].afterBattleGameFinished(this, this.level, 'WINNER', singleWinnerPrize);
 		}
 		else if(winners.length == 2)
 		{
-			winners[0].increaseJackpotAvailableBids(lastWinnerPrize);
-			winners[1].increaseJackpotAvailableBids(longestWinnerPrize);
-			winners[0].updateBattleWinsArray(this.getPostFinishObject('WINNER'));
-			winners[1].updateBattleWinsArray(this.getPostFinishObject('WINNER'));
+			winners[0].afterBattleGameFinished(this, this.level, 'WINNER', lastWinnerPrize);
+			winners[1].afterBattleGameFinished(this, this.level, 'WINNER', longestWinnerPrize);
 		}
 
 		for(var k in users)
 	    {
-	        if(winners.indexOf(users[k].userId) <= -1)
+	        if(winnerIds.indexOf(users[k].userId) <= -1)
 	        {
-	        	users[k].updateBattleWinsArray(this.getPostFinishObject('LOOSER'));
-	            users[k].jackpotUser.currentSocket.emit(EVT_EMIT_UPDATE_HOME_JACKPOT_BATTLE_INFO, {
-	                battleWins: this.users[k].jackpotUser.totalNormalBattleWins + this.users[k].jackpotUser.totalGamblingBattleWins,
-	                battleStreak: this.users[k].jackpotUser.getNormalBattleCurrentStreak()
-	            });
+	        	users[k].afterBattleGameFinished(this, this.level, 'LOOSER');
 	        }
 	    }
 	}
-}
-
-BattleGame.prototype.getPostFinishObject = function(status)
-{
-	return {
-		gameUniqueGameId: this.uniqueId,
-		levelUniqueId 	: this.level.uniqueId,
-		winStatus 		: status
-	};
 }
 
 BattleGame.prototype.emitTimerUpdates = function()

@@ -13,4 +13,9 @@ NormalBattleGame.prototype = Object.create(BattleGame.prototype);
 
 NormalBattleGame.prototype.constructor = NormalBattleGame;
 
+NormalBattleGame.prototype.onUserAdded = function()
+{
+  
+}
+
 export default NormalBattleGame;
