@@ -26,6 +26,7 @@ export const EVT_EMIT_JACKPOT_RESPONSE_BATTLE 				= 'response_battle';
 export const EVT_EMIT_JACKPOT_AVAILABLE_BID_ON_BATTLE_WIN 	= 'update_available_bid_after_battle_win';
 export const EVT_EMIT_JACKPOT_UPDATE_BATTLE_STREAK 			= 'update_home_jackpot_battle_info';
 export const EVT_EMIT_JACKPOT_MY_INFO_CHANGED               = 'jackpot_my_info_changed';
+export const EVT_EMIT_JACKPOT_GAME_FINISHED         = 'game_finished';
 
 
 // Jackpot Normal Battle Specific Constants

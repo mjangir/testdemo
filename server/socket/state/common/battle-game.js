@@ -233,9 +233,9 @@ BattleGame.prototype.countDown = function()
 	}
 }
 
-BattleGame.prototype.finishGame = function()
+BattleGame.prototype.finishGame = function(forceFinish)
 {
-	if(this.getClock('game').remaining <= 0 && this.gameStatus != 'FINISHED')
+	if((this.getClock('game').remaining <= 0 || forceFinish == true) && this.gameStatus != 'FINISHED')
 	{
     // Set The Game Status FINISHED
     this.gameStatus = 'FINISHED';
@@ -273,13 +273,13 @@ BattleGame.prototype.finishGame = function()
 
     global.ticktockGameState.jackpotSocketNs.in(this.getRoomName()).emit(
       EVT_EMIT_NORMAL_BATTLE_GAME_FINISHED,
-      this.buildFinalFinishData(lastBidUser, longestBidUser, bothAreSame)
+      this.buildFinalFinishData(lastBidUser, longestBidUser, bothAreSame, forceFinish)
     );
   }
 
 }
 
-BattleGame.prototype.buildFinalFinishData = function(lastBidUser, longestBidUser, bothAreSame)
+BattleGame.prototype.buildFinalFinishData = function(lastBidUser, longestBidUser, bothAreSame, forceFinish)
 {
   var finalData = {status: true};
   
@@ -316,6 +316,8 @@ BattleGame.prototype.buildFinalFinishData = function(lastBidUser, longestBidUser
   }
 
   finalData.bothAreSame = bothAreSame;
+
+  finalData.forceFinish = forceFinish == true;
 
   return finalData;
 }

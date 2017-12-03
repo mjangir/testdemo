@@ -900,6 +900,37 @@ JackpotUser.prototype.getCurrentBattleStreak = function()
   return battleStreakData[battleStreakData.length - 1]['times'];
 }
 
+JackpotUser.prototype.getNormalBattleLongestStreak = function()
+{
+  return this.getLongestBattleStreak(this.battleWins['normalBattle']);
+}
+
+JackpotUser.prototype.getAdvanceBattleLongestStreak = function()
+{
+  return this.getLongestBattleStreak(this.battleWins['advanceBattle']);
+}
+
+JackpotUser.prototype.getLongestBattleStreak = function(input)
+{
+  var streakData;
+
+  if(input.length == 0 || input[input.length - 1].winningStatus == 'LOOSER')
+  {
+    return 0;
+  }
+
+  streakData = this.getBattleStreakData(input);
+
+  if(streakData.length == 0)
+  {
+    return 0;
+  }
+
+  return _.max(streakData.map(function(a){
+		return a.times;
+	}));
+}
+
 JackpotUser.prototype.getBattleStreakData = function(input)
 {
   var output = [];

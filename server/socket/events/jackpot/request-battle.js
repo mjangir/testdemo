@@ -2,6 +2,7 @@
 
 import isJackpotExist from '../../utils/is-jackpot-exist';
 import { EVT_EMIT_JACKPOT_RESPONSE_BATTLE } from '../../constants';
+import JackpotUser from '../../state/jackpot/jackpot-user';
 
 function handleRequestBattle(socket, data)
 {
@@ -22,7 +23,7 @@ function handleRequestBattle(socket, data)
     battles     = jackpot.isDoomsDayOver() ? jackpot.getAdvanceBattleLevels() : jackpot.getNormalBattleLevels();
     battleType  = jackpot.isDoomsDayOver() ? 'ADVANCE' : 'NORMAL';
 
-    if(battles.length > 0)
+    if(battles.length > 0 || user instanceof JackpotUser)
     {
         for(var k in battles)
         {

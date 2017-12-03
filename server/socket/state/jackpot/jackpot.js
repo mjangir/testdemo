@@ -8,16 +8,24 @@ import BidContainer from '../common/bid-container';
 import Game from '../common/game';
 import sqldb from '../../../sqldb';
 import _ from 'lodash';
+import moment from 'moment';
 import { getUserObjectById, convertAmountToCommaString } from '../../../utils/functions';
 import {
     EVT_EMIT_JACKPOT_UPDATE_AMOUNT,
     EVT_EMIT_JACKPOT_SHOW_QUIT_BUTTON,
     EVT_EMIT_JACKPOT_UPDATES_TO_ITS_ROOM,
     EVT_EMIT_JACKPOT_UPDATE_TIMER,
-    EVT_EMIT_JACKPOT_CAN_I_BID
+    EVT_EMIT_JACKPOT_CAN_I_BID,
+    EVT_EMIT_JACKPOT_GAME_FINISHED
 } from '../../constants';
 
-const JackpotModel = sqldb.Jackpot;
+const UserModel                 = sqldb.User;
+const JackpotModel              = sqldb.Jackpot;
+const JackpotGameModel          = sqldb.JackpotGame;
+const JackpotGameUserModel      = sqldb.JackpotGameUser;
+const JackpotGameUserBidModel   = sqldb.JackpotGameUserBid;
+const JackpotGameWinnerModel    = sqldb.JackpotGameWinner;
+const UserWinningMoneyStatement = sqldb.UserWinningMoneyStatement;
 
 function Jackpot(data)
 {
@@ -261,9 +269,217 @@ Jackpot.prototype.getAdvanceBattleLevels = function()
     return _.sortBy(this.advanceBattleLevels, 'order');
 }
 
-Jackpot.prototype.saveDataInDB = function()
+Jackpot.prototype.getWinnerData = function()
 {
+  var lastBidDuration  	  = this.bidContainer.getLastBidDuration(),
+      lastBidUserId  		  = this.bidContainer.getLastBidUserId(),
+      longestBidDuration  = this.bidContainer.getLongestBidDuration(),
+      longestBidUserId  	= this.bidContainer.getLongestBidUserId(),
+      bothAreSame 		    = lastBidUserId === longestBidUserId,
+      lastBidUser 		    = lastBidUserId != null ? getUserObjectById(String(lastBidUserId)) : false,
+      longestBidUser 		  = longestBidUserId != null ? getUserObjectById(String(longestBidUserId)) : false;
 
+  return {
+    longestBidUser: longestBidUser,
+    lastBidUser:    lastBidUser,
+    bothAreSame:    bothAreSame
+  };
+}
+
+Jackpot.prototype.saveDataInDB = function(winnerData)
+{
+  var jackpotCore;
+
+  // Create Jackpot Core
+  jackpotCore = this.createJackpotCore();
+
+  // Create Jackpot Game Users
+  jackpotCore = this.createJackpotCoreUsers(jackpotCore);
+
+  // Create Jackpot Game Winners
+  jackpotCore = this.createJackpotCoreWinners(jackpotCore);
+
+  // Save The Data In Database
+  this.saveJackpotCoreInDatabase(jackpotCore, function()
+  {
+    
+  });
+}
+
+Jackpot.prototype.saveJackpotCoreInDatabase = function(jackpotCore, callback)
+{
+  var jpWinners = jackpotCore.JackpotGameWinners;
+
+  return JackpotGameModel.create(jackpotCore,
+  {
+    include: [
+    {
+        model   : JackpotGameUserModel,
+        as      : 'JackpotGameUsers',
+        include : [
+        {
+            model   : JackpotGameUserBidModel,
+            as      : 'JackpotGameUserBids'
+        }]
+    },
+    {
+        model   : JackpotGameWinnerModel,
+        as      : 'JackpotGameWinners'
+    }]
+  }).then(function(res)
+  {
+    // If everything went well, update the jackpot status to finished in main table
+    JackpotModel.find({
+      where: {
+          id: jackpotCore.jackpotId
+      }
+    })
+    .then(function(entity)
+    {
+      // Update winning money statement
+      if(jpWinners.length > 0)
+      {
+          for(var t in jpWinners)
+          {
+              UserWinningMoneyStatement.create({
+                  userId: jpWinners[t].userId,
+                  credit: jpWinners[t].winningAmount,
+                  relatedTo: 'JACKPOT'
+              });
+          }
+      }
+
+      entity.updateAttributes({gameStatus: 'FINISHED'})
+      .then(function(updated)
+      {
+          callback.call(global, null);
+      }).catch(function(err)
+      {
+          callback.call(global, err);
+      })
+    }).catch(function(err){
+        
+    });
+  }).catch(function(err)
+  {
+      console.log(err);
+      callback.call(global, err);
+  });
+}
+
+Jackpot.prototype.createJackpotCore = function()
+{
+  var winnerData = this.getWinnerData();
+
+  var jackpotCore = {
+      jackpotId               : this.id,
+      uniqueId                : this.uniqueId,
+      totalUsersParticipated  : this.getUsers().length,
+      totalNumberOfBids       : this.bidContainer.getAllBids().length,
+      lastBidDuration         : this.bidContainer.getLastBidDuration(),
+      longestBidDuration      : this.bidContainer.getLongestBidDuration(),
+      longestBidWinnerUserId  : winnerData.longestBidUser ? winnerData.longestBidUser.id : null,
+      lastBidWinnerUserId     : winnerData.lastBidUser ? winnerData.lastBidUser.id : null,
+      startedOn               : this.startedOn ? moment(this.startedOn) : moment(new Date()),
+      finishedOn              : moment(new Date())
+    };
+
+    jackpotCore.startedOn   = jackpotCore.startedOn.format("YYYY-MM-DD HH:mm:ss");
+    jackpotCore.finishedOn  = jackpotCore.finishedOn.format("YYYY-MM-DD HH:mm:ss");
+
+  return jackpotCore;
+}
+
+Jackpot.prototype.createJackpotCoreUsers = function(jackpotCore)
+{
+  jackpotCore.JackpotGameUsers = [];
+  
+  var users = this.getUsers(),
+      user,
+      userBids,
+      userBid,
+      userBidsRefined = [],
+      userRelation;
+
+  if(users.length > 0)
+  {
+    for(var k in users)
+    {
+      user      = users[k],
+      userBids  = this.bidContainer.getAllBids(user.userId);
+
+      if(userBids.length > 0)
+      {
+        for(var j in userBids)
+        {
+          userBidsRefined.push({
+            bidStartTime: userBids[j].startTime,
+            bidEndTime:   userBids[j].endTime,
+            bidDuration:  userBids[j].duration
+          });
+        }
+      }
+
+      userRelation = {
+        remainingAvailableBids      : user.getJackpotAvailableBids(),
+        totalNumberOfBids           : userBids.length,
+        longestBidDuration          : this.bidContainer.getLongestBidDurationByUserId(user.userId),
+        joinedOn                    : userBids[0] ? userBids[0].startTime : null,
+        userId                      : user.userId,
+        JackpotGameUserBids         : userBidsRefined,
+        normalBattleWins            : user.getTotalNormalBattleWins(),
+        gamblingBattleWins          : user.getTotalAdvanceBattleWins(),
+        normalBattleLooses          : user.getTotalNormalBattleLooses(),
+        gamblingBattleLooses        : user.getTotalAdvanceBattleLooses(),
+        normalBattleLongestStreak   : user.getNormalBattleLongestStreak(),
+        gamblingBattleLongestStreak : user.getAdvanceBattleLongestStreak()
+      };
+
+      jackpotCore.JackpotGameUsers.push(userRelation);
+    }
+  }
+
+  return jackpotCore;
+}
+
+Jackpot.prototype.createJackpotCoreWinners = function(jackpotCore)
+{
+  var winnerData        = this.getWinnerData(),
+      jpWinners         = [],
+      settings          = global.ticktockGameState.settings,
+      lastBidPercent    = parseInt(settings['jackpot_setting_last_bid_percent_amount'], 10),
+      longestBidPercent = parseInt(settings['jackpot_setting_longest_bid_percent_amount'], 10);
+
+  if(winnerData.bothAreSame == true)
+  {
+    jpWinners.push({
+        isLastBidUser       : 1,
+        isLongestBidUser    : 1,
+        jackpotAmount       : this.jackpotAmount,
+        winningAmount       : this.jackpotAmount,
+        userId              : winnerData.lastBidUser.id
+    });
+  }
+  else
+  {
+    jpWinners.push({
+        isLastBidUser       : 1,
+        isLongestBidUser    : 0,
+        jackpotAmount       : this.jackpotAmount,
+        winningAmount       : parseFloat((this.jackpotAmount * lastBidPercent/100), 10).toFixed(2),
+        userId              : winnerData.lastBidUser.id
+    });
+    jpWinners.push({
+        isLastBidUser       : 0,
+        isLongestBidUser    : 1,
+        jackpotAmount       : this.jackpotAmount,
+        winningAmount       : parseFloat((this.jackpotAmount * longestBidPercent/100), 10).toFixed(2),
+        userId              : winnerData.longestBidUser.id
+    });
+  }
+  jackpotCore.JackpotGameWinners = jpWinners;
+
+  return jackpotCore;
 }
 
 Jackpot.prototype.emitBattlesInfoEverySecond = function()
@@ -313,6 +529,7 @@ Jackpot.prototype.fireForJackpotOnEverySecond = function()
     this.finishGame();
     this.emitTimerUpdates();
     this.emitUpdatesToItsRoom();
+    this.finishNormalBattlesEverySecond();
 }
 
 Jackpot.prototype.emitShowQuitButton = function()
@@ -330,15 +547,21 @@ Jackpot.prototype.emitShowQuitButton = function()
 
 Jackpot.prototype.finishGame = function()
 {
-    var context = this;
+    var context   = this,
+        namespace = global.ticktockGameState.jackpotSocketNs,
+        winnerData;
 
     if(context.getClockRemaining('game') == 0)
     {
         this.gameStatus = 'FINISHED';
 
+        winnerData = this.getWinnerData();
+
+        namespace.in(this.getRoomName()).emit(EVT_EMIT_JACKPOT_GAME_FINISHED, winnerData);
+
         setTimeout(function()
         {
-            context.saveDataInDB();
+            context.saveDataInDB(winnerData);
         });
     }
 }
@@ -410,6 +633,22 @@ Jackpot.prototype.getBasicInfo = function()
         name:        this.title,
         amount:      convertAmountToCommaString(this.jackpotAmount)
     };
+}
+
+Jackpot.prototype.finishNormalBattlesEverySecond = function()
+{
+  if(this.getClock('doomsday') <= 10)
+  {
+    var normalBattleLevels = this.getNormalBattleLevels();
+
+    if(normalBattleLevels.length > 0)
+    {
+      for(var k in normalBattleLevels)
+      {
+        normalBattleLevels[k].finishAllGamesForcefully();
+      }
+    }
+  }
 }
 
 export default Jackpot;

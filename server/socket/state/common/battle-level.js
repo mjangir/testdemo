@@ -143,4 +143,17 @@ BattleLevel.prototype.hasUserExistingGame = function(user)
   return game;
 }
 
+BattleLevel.prototype.finishAllGamesForcefully = function()
+{
+  var games = this.getAllGames();
+
+  if(games.length > 0)
+  {
+    for(var k in games)
+    {
+      games[k].finishGame(true);
+    }
+  }
+}
+
 export default BattleLevel;
