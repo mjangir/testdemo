@@ -8,8 +8,8 @@ import {generateRandomString, findClientsSocket} from '../../utils/functions';
 import * as constants from '../../config/constants';
 import NormalBattleContainer from '../../sockets/state/normal-battle';
 import GamblingBattleContainer from '../../sockets/state/gambling-battle';
-import createConnectionAgain from '../../sockets/events/jackpot/connect';
-import JackpotState from '../../socket/game-state';
+import createConnectionAgain from '../../socket/events/connect';
+import JackpotState from '../../socket/state/jackpot/jackpot';
 
 var Jackpot             = sqldb.Jackpot;
 var JackpotBattleLevel  = sqldb.JackpotBattleLevel;
@@ -339,15 +339,15 @@ exports.insertInSocket = function(req, res)
         global.ticktockGameState.jackpots.push(new JackpotState(jp.get({plain: true})));
       });
 
-        // var connected = findClientsSocket(null, global.jackpotSocketNamespace);
+        var connected = findClientsSocket(null, global.ticktockGameState.jackpotSocketNs);
 
-        // if(connected.length)
-        // {
-        //     for(var k in connected)
-        //     {
-        //         createConnectionAgain(connected[k]);
-        //     }
-        // }
+        if(connected.length)
+        {
+            for(var k in connected)
+            {
+                createConnectionAgain(connected[k]);
+            }
+        }
 
         res.status(200).json({
           status: 'success',

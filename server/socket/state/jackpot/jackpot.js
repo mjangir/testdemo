@@ -600,7 +600,8 @@ Jackpot.prototype.getUpdatedJackpotData = function()
         longestBid      : null,
         averageBidBank  : this.getAverageBidBank(),
         totalBids       : placedBids.length,
-        currentBidUser  : {name: bidContainer.getLastBidUserName()}
+        currentBidUser  : {name: bidContainer.getLastBidUserName()},
+        canIBid         : true
     };
 }
 
