@@ -151,6 +151,45 @@ function getSimplifiedUsers(users)
 }
 
 /**
+ * Find Jackpot By ID
+ * 
+ * @param {any} id 
+ */
+function findJackpotById(id)
+{
+  return _.find(global.ticktockGameState.jackpots, {id: id});
+}
+
+/**
+ * Update Jackpot Params In State
+ * 
+ * 
+ * @param {any} jackpot 
+ */
+export function updateJackpotParamsInState(jackpot)
+{
+  var jackpots = global.ticktockGameState.jackpots,
+      existing;
+
+  if(jackpots.length > 0 && findJackpotById(jackpot.id))
+  {
+    existing = findJackpotById(jackpot.id);
+    existing.title = jackpot.title;
+  }
+}
+
+/**
+ * Get Jackpot By Unique ID
+ * 
+ * @export
+ * @param {any} uniqueId 
+ */
+export function getJackpotByUniqueId(uniqueId)
+{
+  return _.find(global.ticktockGameState.jackpots, {uniqueId: uniqueId});
+}
+
+/**
  * Create Global Game State
  *
  * @param  {Socket.IO} socketio

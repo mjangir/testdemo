@@ -10,6 +10,7 @@ import NormalBattleContainer from '../../sockets/state/normal-battle';
 import GamblingBattleContainer from '../../sockets/state/gambling-battle';
 import createConnectionAgain from '../../socket/events/connect';
 import JackpotState from '../../socket/state/jackpot/jackpot';
+import { updateJackpotParamsInState, getJackpotByUniqueId } from '../../socket/game-state';
 
 var Jackpot             = sqldb.Jackpot;
 var JackpotBattleLevel  = sqldb.JackpotBattleLevel;
@@ -337,10 +338,9 @@ exports.insertInSocket = function(req, res)
       }).then(function(jp)
       {
         global.ticktockGameState.jackpots.push(new JackpotState(jp.get({plain: true})));
-      });
-
+        
         var connected = findClientsSocket(null, global.ticktockGameState.jackpotSocketNs);
-
+        
         if(connected.length)
         {
             for(var k in connected)
@@ -348,6 +348,7 @@ exports.insertInSocket = function(req, res)
                 createConnectionAgain(connected[k]);
             }
         }
+      });
 
         res.status(200).json({
           status: 'success',
@@ -377,36 +378,25 @@ exports.updateInSocket = function(req, res)
   {
     if(entity)
     {
-      var jackpotPlain        = entity.get({plain: true}),
-          globalJackpotState  = global.globalJackpotSocketState,
-          existingJackpot     = globalJackpotState.getJackpot(jackpotPlain.uniqueId);
+      var jackpotPlain = entity.get({plain: true}),
+          connected;
 
-        if(existingJackpot)
+        updateJackpotParamsInState(jackpotPlain);
+            
+        connected = findClientsSocket(null, global.ticktockGameState.jackpotSocketNs);
+        
+        if(connected.length)
         {
-          existingJackpot.metaData.title            = jackpotPlain.title;
-          existingJackpot.metaData.amount           = jackpotPlain.amount;
-          existingJackpot.metaData.durationSetting  = jackpotPlain.durationSetting;
+            for(var k in connected)
+            {
+                createConnectionAgain(connected[k]);
+            }
         }
-
-        if(existingJackpot && existingJackpot.metaData.gameStatus != 'STARTED')
-        {
-          existingJackpot.metaData.gameClockTime      = jackpotPlain.gameClockTime;
-          existingJackpot.metaData.gameClockRemaining = jackpotPlain.gameClockRemaining;
-          existingJackpot.metaData.doomsDayTime       = jackpotPlain.doomsDayTime;
-          existingJackpot.metaData.doomsDayRemaining  = jackpotPlain.doomsDayRemaining;
-
-          res.status(200).json({
-            status: 'success',
-            message: 'Jackpot updated to global state successfully'
-          }).end();
-        }
-        else
-        {
-          res.status(200).json({
-            status: 'error',
-            message: 'current jackpot game clock can\'t be updated because its already running.'
-          }).end();
-        }
+        
+        res.status(200).json({
+          status: 'success',
+          message: 'Jackpot updated to global state successfully'
+        }).end();
     }
   })
   .catch(sequelizeErrorHandler(res));
@@ -432,12 +422,11 @@ exports.checkSocketGameState = function(req, res)
     if(entity)
     {
       var jackpotPlain        = entity.get({plain: true}),
-          globalJackpotState  = global.globalJackpotSocketState,
-          existingJackpot     = globalJackpotState.getJackpot(jackpotPlain.uniqueId);
+          existingJackpot  = getJackpotByUniqueId(jackpotPlain.uniqueId);
 
         res.status(200).json({
           status: 'success',
-          state:  existingJackpot ? existingJackpot.metaData.gameStatus : false
+          state:  existingJackpot ? existingJackpot.gameStatus : false
         }).end();
     }
   })
@@ -463,14 +452,13 @@ exports.updateBattleInSocket = function(req, res)
   {
     if(entity)
     {
-      var jackpotPlain        = entity.get({plain: true}),
-          globalJackpotState  = global.globalJackpotSocketState,
-          existingJackpot     = globalJackpotState.getJackpot(jackpotPlain.uniqueId);
+      var jackpotPlain      = entity.get({plain: true}),
+          existingJackpot   = getJackpotByUniqueId(jackpotPlain.uniqueId);;
 
-          if(existingJackpot && existingJackpot.metaData.gameStatus != 'STARTED')
+          if(existingJackpot && existingJackpot.gameStatus != 'STARTED')
           {
-            existingJackpot.normalBattleContainer       = new NormalBattleContainer(existingJackpot);
-            existingJackpot.gamblingBattleContainer     = new GamblingBattleContainer(existingJackpot);
+            // existingJackpot.normalBattleContainer       = new NormalBattleContainer(existingJackpot);
+            // existingJackpot.gamblingBattleContainer     = new GamblingBattleContainer(existingJackpot);
 
             res.status(200).json({
               status: 'success',

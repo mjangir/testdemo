@@ -34,6 +34,7 @@ function handleRequestBattle(socket, data)
                 prizeValue              : battles[k].prizeBids,
                 defaultAvailableBids    : battles[k].defaultAvailableBids,
                 isLastLevel             : battles[k].isLastLevel,
+                minRequiredBids         : battles[k].minBidsToGamb ? battles[k].minBidsToGamb : 0,
                 prizeType               : 'BID',
                 isLocked                : k == 0 ? false : battles[k].isLockedForUser(battles[k-1], user),
             });
