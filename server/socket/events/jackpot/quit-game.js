@@ -31,7 +31,7 @@ function leaveCurrentAndGetNewJackpot(jackpot, userId, socket)
 
     	// Make this user's online staus inactive for this jackpot and game status too
 	    user.isActive    	= false;
-	    user.quitJackpotGame();
+	    user.quitJackpotGame(socket);
 
 	    // Get a new jackpot for this user to join a new game
 	    newJackpot = getUserJackpot('userId', userId);
