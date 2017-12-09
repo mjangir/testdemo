@@ -161,9 +161,10 @@ JackpotUser.prototype.afterJoinJackpot = function()
     }
     else
     {
-        socket.emit(EVT_EMIT_JACKPOT_CAN_I_BID, {
-            canIBid: (lastBidUserId != this.userId)
-        });
+      namespace.in(room).emit(EVT_EMIT_JACKPOT_CAN_I_BID, {canIBid: true});
+      socket.emit(EVT_EMIT_JACKPOT_CAN_I_BID, {
+          canIBid: (lastBidUserId != this.userId)
+      });
     }
 
     jackpot.emitUpdatesToItsRoom();
