@@ -353,26 +353,29 @@ BattleGame.prototype.updateUserInstanceOnFinish = function(winners, winnerIds)
 
 BattleGame.prototype.emitTimerUpdates = function()
 {
-	var room 	= this.getRoomName(),
-		ns 		= global.ticktockGameState.jackpotSocketNs,
-		evt;
+  if(this.gameStatus == 'STARTED')
+  {
+    var room 	= this.getRoomName(),
+        ns 		= global.ticktockGameState.jackpotSocketNs,
+        evt;
 
-	if(this.constructor.name == 'NormalBattleGame')
-	{
-		evt = EVT_EMIT_NORMAL_BATTLE_TIMER;
-	}
-	else if(this.constructor.name == 'AdvanceBattleGame')
-	{
-		evt = EVT_EMIT_ADVANCE_BATTLE_TIMER;
-	}
+      if(this.constructor.name == 'NormalBattleGame')
+      {
+        evt = EVT_EMIT_NORMAL_BATTLE_TIMER;
+      }
+      else if(this.constructor.name == 'AdvanceBattleGame')
+      {
+        evt = EVT_EMIT_ADVANCE_BATTLE_TIMER;
+      }
 
-    ns.in(room).emit(evt, {
-        battleClock         : this.getClock('game').getFormattedRemaining(),
-        currentBidDuration  : this.bidContainer.getLastBidDuration(true),
-        currentBidUserName  : this.bidContainer.getLastBidUserName(),
-        longestBidDuration  : this.bidContainer.getLongestBidDuration(true),
-        longestBidUserName  : this.bidContainer.getLongestBidUserName()
-    });
+      ns.in(room).emit(evt, {
+          battleClock         : this.getClock('game').getFormattedRemaining(),
+          currentBidDuration  : this.bidContainer.getLastBidDuration(true),
+          currentBidUserName  : this.bidContainer.getLastBidUserName(),
+          longestBidDuration  : this.bidContainer.getLongestBidDuration(true),
+          longestBidUserName  : this.bidContainer.getLongestBidUserName()
+      });
+  }
 }
 
 BattleGame.prototype.placeBid = function(userId, socket)
