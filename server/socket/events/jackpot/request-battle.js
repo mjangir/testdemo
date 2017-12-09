@@ -31,7 +31,7 @@ function handleRequestBattle(socket, data)
                 uniqueId                : battles[k].uniqueId,
                 order                   : battles[k].order,
                 levelName               : battles[k].levelName,
-                prizeValue              : battles[k].prizeBids,
+                prizeValue              : battles[k].getPriceValue(),
                 defaultAvailableBids    : battles[k].defaultAvailableBids,
                 isLastLevel             : battles[k].isLastLevel,
                 minRequiredBids         : battles[k].minBidsToGamb ? battles[k].minBidsToGamb : 0,
