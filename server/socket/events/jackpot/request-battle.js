@@ -15,7 +15,10 @@ function handleRequestBattle(socket, data)
 
     if(!data || (!data.jackpotUniqueId || !data.userId || isJackpotExist(data.jackpotUniqueId) == false))
     {
-        return;
+      socket.emit(EVT_EMIT_JACKPOT_RESPONSE_BATTLE, {
+          battleLevelsList    : []
+      });
+      return;
     }
 
     jackpot     = isJackpotExist(data.jackpotUniqueId);
