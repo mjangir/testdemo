@@ -27,6 +27,7 @@ export const EVT_EMIT_JACKPOT_AVAILABLE_BID_ON_BATTLE_WIN 	= 'update_available_b
 export const EVT_EMIT_JACKPOT_UPDATE_BATTLE_STREAK 			= 'update_home_jackpot_battle_info';
 export const EVT_EMIT_JACKPOT_MY_INFO_CHANGED               = 'jackpot_my_info_changed';
 export const EVT_EMIT_JACKPOT_GAME_FINISHED         = 'game_finished';
+export const EVT_EMIT_JACKPOT_DOOMSDAY_OVER         = 'jackpot_doomsday_over';
 
 
 // Jackpot Normal Battle Specific Constants
@@ -47,7 +48,7 @@ export const EVT_EMIT_NORMAL_BATTLE_GAME_ABOUT_TO_START 	= 'normal_battle_game_a
 export const EVT_EMIT_NORMAL_BATTLE_UPDATE_JACKPOT_AMOUNT 	= 'update_normal_battle_jackpot_amount';
 export const EVT_EMIT_NORMAL_BATTLE_JACKPOT_FINISHED 		= 'normal_battle_main_jackpot_finished';
 export const EVT_EMIT_NORMAL_BATTLE_SHOW_QUIT_BUTTON        = 'show_normal_battle_quit_button';
-export const EVT_EMIT_NORMAL_BATTLE_HIDE_QUIT_BUTTON        = 'show_normal_battle_quit_button';
+export const EVT_EMIT_NORMAL_BATTLE_HIDE_QUIT_BUTTON        = 'hide_normal_battle_quit_button';
 export const EVT_EMIT_NORMAL_BATTLE_GAME_QUITTED            = 'normal_battle_game_quitted';
 
 
@@ -70,7 +71,7 @@ export const EVT_EMIT_ADVANCE_BATTLE_GAME_ABOUT_TO_START     = 'advance_battle_g
 export const EVT_EMIT_ADVANCE_BATTLE_UPDATE_JACKPOT_AMOUNT   = 'update_advance_battle_jackpot_amount';
 export const EVT_EMIT_ADVANCE_BATTLE_JACKPOT_FINISHED        = 'advance_battle_main_jackpot_finished';
 export const EVT_EMIT_ADVANCE_BATTLE_SHOW_QUIT_BUTTON        = 'show_advance_battle_quit_button';
-export const EVT_EMIT_ADVANCE_BATTLE_HIDE_QUIT_BUTTON        = 'show_advance_battle_quit_button';
+export const EVT_EMIT_ADVANCE_BATTLE_HIDE_QUIT_BUTTON        = 'hide_advance_battle_quit_button';
 export const EVT_EMIT_ADVANCE_BATTLE_GAME_QUITTED            = 'advance_battle_game_quitted';
 
 

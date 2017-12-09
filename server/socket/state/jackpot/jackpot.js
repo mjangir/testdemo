@@ -16,7 +16,8 @@ import {
     EVT_EMIT_JACKPOT_UPDATES_TO_ITS_ROOM,
     EVT_EMIT_JACKPOT_UPDATE_TIMER,
     EVT_EMIT_JACKPOT_CAN_I_BID,
-    EVT_EMIT_JACKPOT_GAME_FINISHED
+    EVT_EMIT_JACKPOT_GAME_FINISHED,
+    EVT_EMIT_JACKPOT_DOOMSDAY_OVER
 } from '../../constants';
 
 const UserModel                 = sqldb.User;
@@ -541,6 +542,10 @@ Jackpot.prototype.emitShowQuitButton = function()
     {
         global.ticktockGameState.jackpotSocketNs.in(this.getRoomName()).emit(EVT_EMIT_JACKPOT_SHOW_QUIT_BUTTON, {
             status: true
+        });
+        
+        global.ticktockGameState.jackpotSocketNs.in(this.getRoomName()).emit(EVT_EMIT_JACKPOT_DOOMSDAY_OVER, {
+          status: true
         });
     }
 }
