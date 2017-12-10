@@ -31,6 +31,15 @@ router.post('/', function(req, res, next)
         message: 'Something went wrong, please try again.'
       });
     }
+    else
+    {
+      if(req.body.deviceToken)
+      {
+        user.updateAttributes({
+          deviceToken: req.body.deviceToken
+        });
+      }
+    }
 
     logger.debug('LOGIN::All things went well. Send JWT token in resposne...');
 

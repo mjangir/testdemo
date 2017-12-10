@@ -124,6 +124,14 @@ module.exports = function(sequelize, DataTypes)
       allowNull     : false,
       defaultValue  : 'ACTIVE',
       comment       : "User is active, inactive or deleted"
+    },
+
+    deviceToken: {
+      field         : "device_token",
+      type          : DataTypes.STRING(255),
+      allowNull     : true,
+      defaultValue  : null,
+      comment       : "Device Token"
     }
   },
   {
