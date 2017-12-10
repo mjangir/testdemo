@@ -11,9 +11,11 @@ import GamblingBattleContainer from '../../sockets/state/gambling-battle';
 import createConnectionAgain from '../../socket/events/connect';
 import JackpotState from '../../socket/state/jackpot/jackpot';
 import { updateJackpotParamsInState, getJackpotByUniqueId } from '../../socket/game-state';
+import Sequelize from 'sequelize';
 
 var Jackpot             = sqldb.Jackpot;
 var JackpotBattleLevel  = sqldb.JackpotBattleLevel;
+const Op                = Sequelize.Op;
 
 
 /**
@@ -142,6 +144,26 @@ exports.index = function(req, res)
         ]
       }
     ]
+  })
+  .then(responseWithResult(res))
+  .catch(sequelizeErrorHandler(res));
+};
+
+/**
+ * Get All Jackpots
+ *
+ * @param  {Object} req
+ * @param  {Object} res
+ * @return {String}
+ */
+exports.pastAndCurrentJackpots = function(req, res)
+{
+  Jackpot.findAll({
+    attributes: ['id', 'title', 'uniqueId', 'amount'],
+    where: Sequelize.or(
+      { gameStatus: 'STARTED' },
+      { gameStatus: 'FINISHED'}
+    )
   })
   .then(responseWithResult(res))
   .catch(sequelizeErrorHandler(res));

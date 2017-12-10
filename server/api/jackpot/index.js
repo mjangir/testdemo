@@ -11,6 +11,8 @@ const router = express.Router();
 // Get all jackpots
 router.get('/', [auth.isAuthenticated(), validators.index], controller.index);
 
+router.get('/dropdown', [auth.isAuthenticated(), validators.index], controller.pastAndCurrentJackpots);
+
 // Get a single jackpot
 router.get('/:id', [auth.isAuthenticated(), validators.show], controller.show);
 
