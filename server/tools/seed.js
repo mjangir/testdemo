@@ -396,6 +396,10 @@ function createDefaultSettings()
   {
     key : 'privacy_text',
     value : 'No text yet'
+  },
+  {
+    key : 'faq_text',
+    value : 'No FAQ Yet'
   }
   ]);
 }

@@ -60,20 +60,20 @@ const index = function(req, res)
     {
         var walletData =  row[0];
 
-        user.careerEarnings  = walletData.total_credit;
-        //user.totalDebit     = walletData.total_debit;
+        user.careerEarning  = walletData.total_credit;
+        user.totalDebit     = walletData.total_debit;
         user.walletBalance  = walletData.balance;
 
         Sequelize.query("SELECT SUM(CASE WHEN is_longest_bid_user=1 THEN 1 ELSE 0 END) AS total_longest_bids,SUM(CASE WHEN is_last_bid_user=1 THEN 1 ELSE 0 END) AS total_last_bids FROM jackpot_game_winner where user_id ="+req.user.user_id, {type: Sequelize.QueryTypes.SELECT}).then(function(bidRes)
         {
-          var bidResult     = bidRes[0];
-          user.longestBids  = bidResult.total_longest_bids;
-          //user.lastBids   = bidResult.total_last_bids;
+          var bidResult           = bidRes[0];
+          user.totalLongestBids   = bidResult.total_longest_bids;
+          user.totalLastBids      = bidResult.total_last_bids;
 
           Sequelize.query("SELECT GREATEST(MAX(normal_battle_longest_streak), MAX(gambling_battle_longest_streak)) AS longest_battle_streak, (SUM(normal_battle_wins) + SUM(gambling_battle_wins)) AS total_battle_wins FROM `jackpot_game_user` WHERE user_id="+req.user.user_id, {type: Sequelize.QueryTypes.SELECT}).then(function(bidData){
             var battleBidData = bidData[0];
-            user.longestBattleStreak  = battleBidData.longest_battle_streak;
-            user.careerBattleWins     = battleBidData.total_battle_wins;
+            user.longestBattleStreak    = battleBidData.longest_battle_streak;
+            user.totalBattleWins        = battleBidData.total_battle_wins;
 
             return res.status(200).json({
               'status': 'success',
