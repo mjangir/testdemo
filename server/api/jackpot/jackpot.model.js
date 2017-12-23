@@ -56,6 +56,22 @@ module.exports = function(sequelize, DataTypes)
       comment       : "Jackpot Dooms Day Clock Time (in seconds)"
     },
 
+    defaultAvailableBids: {
+      field         : "default_available_bids",
+      type          : DataTypes.INTEGER(11),
+      allowNull     : false,
+      defaultValue  : 10,
+      comment       : "Default Available Bids"
+    },
+
+    increaseSecondsOnBid: {
+      field         : "increase_seconds_on_bid",
+      type          : DataTypes.INTEGER(11),
+      allowNull     : false,
+      defaultValue  : 10,
+      comment       : "Increase Seconds On Bid"
+    },
+
     increaseAmountSeconds : {
       field         : "increase_amount_seconds",
       type          : DataTypes.INTEGER(11),

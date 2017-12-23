@@ -1,4 +1,5 @@
 import Game from '../common/game';
+import JackpotUser from './jackpot-user';
 
 /**
  * Jackpot Game
@@ -6,8 +7,11 @@ import Game from '../common/game';
  */
 function JackpotGame(parent) {
   this.parent = parent;
+  this.users  = [];
   this.setTimeclocks();
 }
+
+JackpotGame.prototype = Object.create(Game.prototype);
 
 /**
  * Set Time Clocks
@@ -33,7 +37,7 @@ JackpotGame.prototype.setTimeclocks = function() {
 JackpotGame.prototype.updateJackpotAmount = function() {
   var jackpot = this.parent;
 
-  jackpot.jackpotAmount = Number(parseFloat(jackpot.jackpotAmount, 10) + parseFloat(jackpot.increaseAmount, 10)).toFixed(2);
+  jackpot.amount = Number(parseFloat(jackpot.amount, 10) + parseFloat(jackpot.increaseAmount, 10)).toFixed(2);
 }
 
 /**
@@ -47,11 +51,50 @@ JackpotGame.prototype.isDoomsDayOver = function()
 }
 
 /**
- * Get Application Header Info
+ * Is Game Clock Over
+ * 
+ * @returns {Boolean}
+ */
+JackpotGame.prototype.isGameClockOver = function()
+{
+  return this.getClock('game').remaining == 0;
+}
+
+/**
+ * Get All Users
+ * 
+ * @returns {Array}
+ */
+JackpotGame.prototype.getAllUsers = function() {
+  return this.users;
+}
+
+/**
+ * Get User By ID
+ * 
+ * @param {JackpotUser} userId 
+ */
+JackpotGame.prototype.getUserById = function(userId) {
+  return _.find(this.users, {userId: userId}) || false;
+}
+
+/**
+ * Add User By ID
+ * 
+ * @param {JackpotUser} userId 
+ */
+JackpotGame.prototype.addUserById = function(userId) {
+  var user = new JackpotUser(this, userId);
+  user.afterJoinJackpotGame();
+  return user;
+}
+
+/**
+ * Get Game Header Info
  * 
  * @returns {Object}
  */
-JackpotGame.prototype.getJackpotHeaderInfo = function() {
+JackpotGame.prototype.getGameHeaderInfo = function() {
   return {
     name          : this.parent.title,
     amount        : this.parent.jackpotAmount,
@@ -100,28 +143,3 @@ JackpotGame.prototype.getUserInfo = function(user) {
     battleStreak  : user.getTotalBattleStreak()
   }
 }
-
-/**
- * Get Battle Levels
- * 
- * @returns {Array}
- */
-JackpotGame.prototype.getBattleLevels = function(user) {
-  if(this.isDoomsDayOver()) {
-    return this.parent.getNormalBattleLevels(user);
-  } else {
-    return this.parent.getAdvanceBattleLevels(user);
-  }
-}
-
-/**
- * Get Winner Info
- * 
- * @returns {Object}
- */
-JackpotGame.prototype.getWinnerInfo = function() {
-  
-}
-
-
-JackpotGame.prototype = Object.create(Game.prototype);

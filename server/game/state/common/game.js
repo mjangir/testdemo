@@ -164,6 +164,15 @@ Game.prototype.countDown = function() {
   this.timeclockContainer.countDown();
 }
 
+/**
+ * Run Every Second
+ */
+Game.prototype.runEverySecond = function() {
+  if(this.getClock('game').remaining > 0 && this.gameStatus == 'STARTED') {
+    
+  }
+}
+
 Game.prototype.increaseClockOnBid = function() {
   
 }
