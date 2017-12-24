@@ -6,11 +6,9 @@ import logger from '../../utils/logger';
 import {sequelizeErrorHandler} from '../../utils/LiveErrorHandler';
 import {generateRandomString, findClientsSocket} from '../../utils/functions';
 import * as constants from '../../config/constants';
-import NormalBattleContainer from '../../sockets/state/normal-battle';
-import GamblingBattleContainer from '../../sockets/state/gambling-battle';
-import createConnectionAgain from '../../socket/events/connect';
-import JackpotState from '../../socket/state/jackpot/jackpot';
-import { updateJackpotParamsInState, getJackpotByUniqueId } from '../../socket/game-state';
+import createConnectionAgain from '../../game/events/connect';
+import JackpotState from '../../game/state/jackpot/jackpot';
+import { updateJackpotParamsInState, getJackpotByUniqueId } from '../../game/game-state';
 import Sequelize from 'sequelize';
 
 var Jackpot             = sqldb.Jackpot;

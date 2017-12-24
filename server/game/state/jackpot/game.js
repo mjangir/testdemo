@@ -6,7 +6,8 @@ import updateHomeScreen from '../../utils/emitter/update-home-screen';
 import { 
   HOME_SCREEN_SCENE_GAME,
   HOME_SCREEN_COMPONENT_HEADER,
-  HOME_SCREEN_COMPONENT_BIDS
+  HOME_SCREEN_COMPONENT_BIDS,
+  HOME_SCREEN_COMPONENT_FOOTER
 } from '../../constants';
 
 /**
@@ -275,8 +276,11 @@ JackpotGame.prototype.updateStatusInDB = function(status)
 Game.prototype.runEverySecond = function() {
   if(this.getClock('game').remaining > 0 && this.gameStatus == 'STARTED') {
     this.countDown();
-    updateHomeScreen(this, HOME_SCREEN_SCENE_GAME, [HOME_SCREEN_COMPONENT_HEADER, HOME_SCREEN_COMPONENT_BIDS]);
+    updateHomeScreen(this, HOME_SCREEN_SCENE_GAME, [
+      HOME_SCREEN_COMPONENT_HEADER, 
+      HOME_SCREEN_COMPONENT_BIDS,
+      HOME_SCREEN_COMPONENT_FOOTER
+    ]);
   }
 }
-
 export default JackpotGame;
