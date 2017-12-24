@@ -32,12 +32,30 @@ function JackpotUser(jackpotGame, userId) {
 }
 
 /**
+ * Is Quitted
+ * 
+ * @returns {Boolean}
+ */
+JackpotUser.prototype.isQuitted = function() {
+  return this.gameStatus == 'QUITTED';
+}
+
+/**
+ * Is Bid Button Visible
+ * 
+ * @returns {Boolean}
+ */
+JackpotUser.prototype.isQuitButtonVisible = function() {
+  return this.jackpotGame.isDoomsDayOver();
+}
+
+/**
  * Set Jackpot Default Available Bids
  *
  * @return {*}
  */
 JackpotUser.prototype.setJackpotDefaultAvailableBids = function() {
-    this.availableBids.jackpot = this.jackpot.defaultAvailableBids;
+  this.availableBids.jackpot = this.jackpot.defaultAvailableBids;
 }
 
 /**
@@ -438,3 +456,6 @@ JackpotUser.prototype.getTotalAdvanceBattleLooses = function() {
 JackpotUser.prototype.getTotalBattleLooses = function() {
   return this.getTotalNormalBattleLooses() + this.getTotalAdvanceBattleLooses();
 }
+
+
+export default JackpotUser;

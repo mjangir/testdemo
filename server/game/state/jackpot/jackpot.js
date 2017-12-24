@@ -1,6 +1,15 @@
 
-import JackpotGame from './jackpot-game';
+import JackpotGame from './game';
 import BattleLevel from '../battle/level';
+import sqldb from '../../../sqldb';
+
+const UserModel                 = sqldb.User;
+const JackpotModel              = sqldb.Jackpot;
+const JackpotGameModel          = sqldb.JackpotGame;
+const JackpotGameUserModel      = sqldb.JackpotGameUser;
+const JackpotGameUserBidModel   = sqldb.JackpotGameUserBid;
+const JackpotGameWinnerModel    = sqldb.JackpotGameWinner;
+const UserWinningMoneyStatement = sqldb.UserWinningMoneyStatement;
 
 /**
  * Jackpot Constructor
@@ -8,6 +17,7 @@ import BattleLevel from '../battle/level';
  */
 function Jackpot(data) {
   this.id                       = data.id,
+  this.uniqueId                 = data.uniqueId,
   this.title                    = data.title;
   this.amount                   = data.amount;
   this.minPlayersRequired       = data.minPlayersRequired;
@@ -19,7 +29,7 @@ function Jackpot(data) {
   this.increaseAmount           = data.increaseAmount;
   this.users                    = [];
   this.battleLevels             = [];
-  this.game                     = new JackpotGame();
+  this.game                     = new JackpotGame(this);
 
   this.addBattleLevels(data);
 }
@@ -32,7 +42,7 @@ function Jackpot(data) {
 Jackpot.prototype.addBattleLevels = function(data) {
   if(data.hasOwnProperty('JackpotBattleLevels') && Array.isArray(data.JackpotBattleLevels))
   {
-      levels = data.JackpotBattleLevels;
+      var levels = data.JackpotBattleLevels;
       for(var k in levels)
       {
           this.battleLevels.push(new BattleLevel(this, levels[k]));
@@ -51,3 +61,19 @@ Jackpot.prototype.runEverySecond = function() {
     this.battleLevels[k].runEverySecond();
   }
 }
+
+/**
+ * Update Status In Database
+ * 
+ * @param {String} status 
+ * @returns {*}
+ */
+Jackpot.prototype.updateStatusInDB = function(status) {
+  return JackpotModel.find({where: { id: this.id } })
+  .then(function(jackpot)
+  {
+      return jackpot.updateAttributes({gameStatus: status});
+  });
+}
+
+export default Jackpot;

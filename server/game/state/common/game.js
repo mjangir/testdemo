@@ -1,6 +1,7 @@
 import BidContainer from './bid-container';
 import TimeclockContainer from './timeclock-container';
 import { generateRandomString } from '../../../utils/functions';
+import _ from 'lodash';
 
 /**
  * Game Constructor
@@ -15,27 +16,6 @@ function Game() {
   this.setBidContainer();
   this.setClockContainer();
   this.setRoomName();
-}
-
-/**
- * Set Clock
- * 
- * @param {String} name 
- * @param {Integer} time 
- * @returns {*}
- */
-Game.prototype.setClock = function(name, time) {
-  this.timeclockContainer.setClock(name, time);
-}
-
-/**
- * Get Clock By Name
- * 
- * @param {String} name 
- * @returns {Timeclock}
- */
-Game.prototype.getClock = function(name) {
-  return this.timeclockContainer.getClock(name);
 }
 
 /**
@@ -72,6 +52,27 @@ Game.prototype.setBidContainer = function() {
  */
 Game.prototype.getBidContainer = function() {
   return this.bidContainer;
+}
+
+/**
+ * Set Clock
+ * 
+ * @param {String} name 
+ * @param {Integer} time 
+ * @returns {*}
+ */
+Game.prototype.setClock = function(name, time) {
+  this.timeclockContainer.setClock(name, time);
+}
+
+/**
+ * Get Clock By Name
+ * 
+ * @param {String} name 
+ * @returns {Timeclock}
+ */
+Game.prototype.getClock = function(name) {
+  return this.timeclockContainer.getClock(name);
 }
 
 /**
@@ -133,7 +134,7 @@ Game.prototype.getGameStatus = function() {
  * 
  * @returns {Boolean}
  */
-Game.prototype.isRunning = function() {
+Game.prototype.isStarted = function() {
   return this.getGameStatus() === 'STARTED';
 }
 
@@ -165,22 +166,24 @@ Game.prototype.countDown = function() {
 }
 
 /**
- * Run Every Second
+ * Place Bid By User ID
+ * 
+ * @param {String} userId 
  */
-Game.prototype.runEverySecond = function() {
-  if(this.getClock('game').remaining > 0 && this.gameStatus == 'STARTED') {
+Game.prototype.placeBid = function(userId, socket) {
+  return this.bidContainer.placeBid(userId, socket, function(bidContainer, parent, socket, bid) {
+
+    var user = this.getUserById(bid.userId);
     
-  }
-}
-
-Game.prototype.increaseClockOnBid = function() {
-  
-}
-
-Game.prototype.start = function() {
-  
+    if(user) {
+      user.afterPlacedBid(bidContainer, parent, socket, bid);
+      this.getClock('game').increaseBy(this.parent.increaseSecondsOnBid);
+    }
+  }.bind(this));
 }
 
 Game.prototype.finish = function() {
   
 }
+
+export default Game;

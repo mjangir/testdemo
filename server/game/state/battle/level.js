@@ -6,6 +6,7 @@
 function BattleLevel(jackpot, data) {
   this.jackpot                  = jackpot;
   this.id 						          = data.id;
+  this.uniqueId                 = data.uniqueId,
   this.title 					          = data.levelName;
   this.minPlayersRequired 		  = data.minPlayersRequiredToStart;
   this.gameDuration 					  = data.duration;
@@ -28,3 +29,5 @@ BattleLevel.prototype.runEverySecond = function() {
     this.games[k].runEverySecond();
   }
 }
+
+export default BattleLevel;

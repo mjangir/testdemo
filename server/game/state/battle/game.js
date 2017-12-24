@@ -1,4 +1,5 @@
 import Game from '../common/game';
+import _ from 'lodash';
 
 /**
  * Battle Game
@@ -6,6 +7,7 @@ import Game from '../common/game';
  * @param {any} parent 
  */
 function BattleGame(parent) {
+  Game.call(this);
   this.parent = parent;
   this.setTimeclocks();
 }
@@ -43,3 +45,5 @@ BattleGame.prototype.getGameHeaderInfo = function() {
     gameClock : this.getClock('game').getFormattedRemaining()
   };
 }
+
+export default BattleGame;

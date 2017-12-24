@@ -44,13 +44,13 @@ TimeclockContainer.prototype.countDown = function() {
 }
 
 /**
- * Get Clock By Name And Time
+ * Set Clock By Name And Time
  * 
  * @param {String} name
  * @param {Integer} time
  * @returns {*}
  */
-TimeclockContainer.prototype.getClock = function(name, time) {
+TimeclockContainer.prototype.setClock = function(name, time) {
   this.clocks[name] = new Timeclock({
     clockName: name,
     duration: time

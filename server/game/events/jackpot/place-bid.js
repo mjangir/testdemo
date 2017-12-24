@@ -1,52 +1,52 @@
-'use strict';
-
 import isJackpotExist from '../../utils/is-jackpot-exist';
-import { 
-	EVT_EMIT_JACKPOT_PLACE_BID_ERROR,
-    EVT_EMIT_NO_ENOUGH_BIDS
-} from '../../constants';
+import showErrorPopup from '../../utils/emitter/show-error-popup';
+import { MESSAGE_INVALID_INPUT_PROVIDED } from '../../constants';
 
+/**
+ * Handle Place Bid
+ * 
+ * @param {Socket} socket 
+ * @param {Object} data 
+ */
+function handlePlacebid(socket, data) {
+  var jackpot,
+      game,
+      user,
+      bid;
 
-function handlePlacebid(socket, data)
-{
-	var jackpot,
-		user,
-		bid;
+  if(!data || (!data.jackpotUniqueId || !data.userId || isJackpotExist(data.jackpotUniqueId) == false))
+  {
+      showErrorPopup(socket, MESSAGE_INVALID_INPUT_PROVIDED);
+      return;
+  }
 
-    if(!data || (!data.jackpotUniqueId || !data.userId || isJackpotExist(data.jackpotUniqueId) == false))
-    {
-        socket.emit(EVT_EMIT_JACKPOT_PLACE_BID_ERROR, {
-            error: "Invalid User or Jackpot ID"
-        });
-        return;
-    }
+  jackpot = isJackpotExist(data.jackpotUniqueId);
+  game    = jackpot.game;
+  user 	  = game.getUserById(data.userId);
 
-    jackpot = isJackpotExist(data.jackpotUniqueId);
-    user 	= jackpot.getUserById(data.userId);
+  if(user.getJackpotAvailableBids() <= 0) {
+    showErrorPopup(socket, MESSAGE_NO_ENOUGH_BID_TO_PLACE);
+    return;
+  }
 
-    if(user.getJackpotAvailableBids() <= 0)
-    {
-        user.emitNoEnoughJackpotBids(socket);
-        return;
-    }
+  // If this is first bid and jackpot is not started, start it
+  if(game && game.isNotStarted()) {
+      game.startGame();
+  }
 
-    // If this is first bid and jackpot is not started, start it
-    if(jackpot && jackpot.isNotStarted())
-    {
-        jackpot.startGame();
-    }
-
-    if(jackpot.isStarted())
-    {
-        // Place the bid in corresponding user account
-        bid = jackpot.placeBid(data.userId, socket);
-    }
+  if(game.isStarted())
+  {
+    bid = game.placeBid(data.userId, socket);
+  }
 }
 
-export default function(socket)
-{
-	return function(data)
-	{
+/**
+ * Handle Place Bid
+ * 
+ * @param {Socket} socket 
+ */
+export default function(socket) {
+	return function(data) {
 		handlePlacebid(socket, data);
 	}
 }

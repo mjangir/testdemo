@@ -4,7 +4,7 @@ import express from 'express';
 import sqldb from './sqldb';
 import config from './config/environment';
 import http from 'http';
-import socketioConf from './socket';
+import socketioConf from './game';
 import expressConf from './config/express';
 import routesConf from './routes';
 

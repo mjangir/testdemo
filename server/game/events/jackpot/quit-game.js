@@ -5,8 +5,8 @@ import {
 	EVT_EMIT_JACKPOT_NO_JACKPOT_TO_PLAY
 } from '../../constants';
 
-import getUserJackpot from '../../utils/get-user-jackpot';
-import joinUserToJackpot from '../../utils/join-user-to-jackpot';
+import getUserJackpot from '../../utils/get-user-jackpot-game';
+import joinUserToJackpot from '../../utils/join-user-to-jackpot-game';
 
 function emitNoJackpotToPlay(socket)
 {

@@ -10,7 +10,7 @@ function getCurrentGame(userId) {
   var jackpots  = global.ticktockGameState.jackpots,
       game      = false,
       jackpotGame,
-		  jackpotUser;
+      jackpotUser;
 
 	for(var k in jackpots) {
     jackpotGame = jackpots[k].game;

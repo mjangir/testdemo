@@ -49,6 +49,8 @@ function getAllJackpots()
             'gameClockTime',
             'doomsDayTime',
             'increaseAmountSeconds',
+            'defaultAvailableBids',
+            'increaseSecondsOnBid',
             'increaseAmount',
             'gameStatus',
             'uniqueId',
@@ -70,15 +72,15 @@ function createJackpotGameState(jackpots)
 {
     if(jackpots.length > 0)
     {
-        for(var k in jackpots)
-        {
-            global.ticktockGameState.jackpots.push(new JackpotState(jackpots[k]));
-        }
+      for(var k in jackpots)
+      {
+        global.ticktockGameState.jackpots.push(new JackpotState(jackpots[k]));
+      }
     }
 
     return new Promise(function(resolve, reject)
     {
-        resolve(jackpots);
+      resolve(jackpots);
     });
 }
 

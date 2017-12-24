@@ -3,7 +3,7 @@
 import logger from '../utils/logger';
 import createGlobalGameState from './game-state';
 import startTimer from './timer';
-import { EVT_ON_JOIN_JACKPOT } from './constants';
+import { EVT_ON_APP_CONNECT } from './constants';
 import onConnect from './events/connect';
 
 /**
@@ -21,7 +21,7 @@ function bindJackpotSocketEventHandlers(socketio)
     global.ticktockGameState.jackpotSocketNs = namespace;
 
     // On connection
-    namespace.on(EVT_ON_JOIN_JACKPOT, onConnect);
+    namespace.on(EVT_ON_APP_CONNECT, onConnect);
 }
 
 /**
