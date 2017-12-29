@@ -27,6 +27,8 @@ function JackpotUser(jackpotGame, userId) {
     battle: {}
   };
 
+  this.battleWins = [];
+
   this.setJackpotDefaultAvailableBids();
   this.setJackpotDefaultPlacedBids();
 }

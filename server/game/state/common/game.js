@@ -166,20 +166,13 @@ Game.prototype.countDown = function() {
 }
 
 /**
- * Place Bid By User ID
+ * Is User Bid Consecutive
  * 
- * @param {String} userId 
+ * @param {JackpotUser} user
+ * @returns {Boolean}
  */
-Game.prototype.placeBid = function(userId, socket) {
-  return this.bidContainer.placeBid(userId, socket, function(bidContainer, parent, socket, bid) {
-
-    var user = this.getUserById(bid.userId);
-    
-    if(user) {
-      user.afterPlacedBid(bidContainer, parent, socket, bid);
-      this.getClock('game').increaseBy(this.parent.increaseSecondsOnBid);
-    }
-  }.bind(this));
+Game.prototype.isUserBidConsecutive = function(user) {
+  return user.userId == this.bidContainer.getLastBidUserId();
 }
 
 Game.prototype.finish = function() {

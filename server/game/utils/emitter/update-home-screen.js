@@ -68,19 +68,21 @@ function emitGameScreen(game, components) {
     data[HOME_SCREEN_COMPONENT_PLAYERS] = game.getPlayersInfo();
   }
 
-  if(users.length > 0) {
-    for(var i in users) {
-      var user = users[i];
-
-      if(_.contains(components, HOME_SCREEN_COMPONENT_MY_INFO) || typeof components == 'undefined') {
-        data[HOME_SCREEN_COMPONENT_MY_INFO] = game.getPlayersInfo(user);
+  if((_.contains(components, HOME_SCREEN_COMPONENT_MY_INFO) || _.contains(components, HOME_SCREEN_COMPONENT_FOOTER)) || typeof components == 'undefined') {
+    if(users.length > 0) {
+      for(var i in users) {
+        var user = users[i];
+  
+        if(_.contains(components, HOME_SCREEN_COMPONENT_MY_INFO) || typeof components == 'undefined') {
+          data[HOME_SCREEN_COMPONENT_MY_INFO] = game.getUserInfo(user);
+        }
+  
+        if(_.contains(components, HOME_SCREEN_COMPONENT_FOOTER) || typeof components == 'undefined') {
+          data[HOME_SCREEN_COMPONENT_FOOTER] = game.getUserHomeButtonsInfo(user);
+        }
+  
+        user.socket.emit(EVT_EMIT_UPDATE_HOME_SCREEN, data);
       }
-
-      if(_.contains(components, HOME_SCREEN_COMPONENT_FOOTER) || typeof components == 'undefined') {
-        data[HOME_SCREEN_COMPONENT_FOOTER] = game.getUserHomeButtonsInfo(user);
-      }
-
-      user.socket.emit(EVT_EMIT_UPDATE_HOME_SCREEN, data);
     }
   }
 }

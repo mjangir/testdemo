@@ -46,3 +46,4 @@ export const HOME_SCREEN_COMPONENT_FOOTER  = 'footer';
 export const MESSAGE_NO_JACKPOT_AVAILABLE   = 'No Jackpot Available To Play Right Now. Please Come Later.';
 export const MESSAGE_INVALID_INPUT_PROVIDED = 'Invalid Input Parameters Provided';
 export const MESSAGE_NO_ENOUGH_BID_TO_PLACE = 'You Don\'t Have Enough Bids To Place';
+export const CONSECUTIVE_BIDS_ERROR         = 'You Cannot Put Consecutive Bids';

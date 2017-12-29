@@ -50,6 +50,7 @@ export default function(socket)
     var game = data.game;
     updateHomeScreen(game, HOME_SCREEN_SCENE_GAME);
   }).catch(function(status) {
+    console.log("sss", status);
     updateHomeScreen(false, HOME_SCREEN_SCENE_NO_JACKPOT, false, socket);
   });
 

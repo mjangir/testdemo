@@ -43,7 +43,7 @@ function getNewGame(data) {
 	if(game == false) {
 		for(var k in jackpots) {
       jackpotGame = jackpots[k].game;
-      if(jackpotGame.isStarted() && jackpotGame.getClockRemaining('doomsday') > 0) {
+      if(jackpotGame.isStarted() && jackpotGame.getRemainingTime('doomsday') > 0) {
         game = jackpotGame;
         break;
       }

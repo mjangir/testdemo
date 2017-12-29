@@ -3,11 +3,15 @@ import JackpotUser from './jackpot-user';
 import _ from 'lodash';
 import { convertAmountToCommaString } from '../../../utils/functions';
 import updateHomeScreen from '../../utils/emitter/update-home-screen';
+import showErrorPopup from '../../utils/emitter/show-error-popup';
 import { 
   HOME_SCREEN_SCENE_GAME,
   HOME_SCREEN_COMPONENT_HEADER,
   HOME_SCREEN_COMPONENT_BIDS,
-  HOME_SCREEN_COMPONENT_FOOTER
+  HOME_SCREEN_COMPONENT_MY_INFO,
+  HOME_SCREEN_COMPONENT_FOOTER,
+
+  CONSECUTIVE_BIDS_ERROR
 } from '../../constants';
 
 /**
@@ -108,10 +112,10 @@ JackpotGame.prototype.addUserById = function(userId) {
 JackpotGame.prototype.isBidButtonVisible = function(user) {
   var minPlayersRequired  = this.parent.minPlayersRequired,
       totalUsers          = this.getAllUsers().length,
-      lastBidUserId       = this.bidContainer.getLastBidUserName(),
+      lastBidUserId       = this.bidContainer.getLastBidUserId(),
       userId              = user.userId;
     
-  return (lastBidUserId != userId && totalUsers >= minPlayersRequired);
+  return (totalUsers >= minPlayersRequired && lastBidUserId != userId);
 }
 
 /**
@@ -228,7 +232,7 @@ JackpotGame.prototype.getPlayersInfo = function() {
 JackpotGame.prototype.getUserInfo = function(user) {
   return {
     bidBank       : user.getJackpotAvailableBids(),
-    myLongestBid  : user.getLongestBidDuration(),
+    myLongestBid  : this.bidContainer.getLongestBidDurationByUserId(user.userId, true),
     battlesWon    : user.getTotalBattleWins(),
     battleStreak  : user.getCurrentBattleStreak()
   }
@@ -283,4 +287,29 @@ Game.prototype.runEverySecond = function() {
     ]);
   }
 }
+
+/**
+ * Place Bid By User ID
+ * 
+ * @param {String} userId 
+ */
+Game.prototype.placeBid = function(userId, socket) {
+  var user = this.getUserById(userId);
+
+  if(user && this.isUserBidConsecutive(user)) {
+    showErrorPopup(user.socket, CONSECUTIVE_BIDS_ERROR);
+    return false;
+  }
+
+  return this.bidContainer.placeBid(userId, socket, function(bidContainer, parent, socket, bid) {
+    if(user) {
+      user.afterPlacedBid(bidContainer, parent, socket, bid);
+      this.getClock('game').increaseBy(this.parent.increaseSecondsOnBid);
+      updateHomeScreen(this, HOME_SCREEN_SCENE_GAME, [
+        HOME_SCREEN_COMPONENT_MY_INFO
+      ]);
+    }
+  }.bind(this));
+}
+
 export default JackpotGame;
