@@ -312,4 +312,50 @@ Game.prototype.placeBid = function(userId, socket) {
   }.bind(this));
 }
 
+/**
+ * Get Battle Levels List
+ * 
+ * @returns {JackpotUser}
+ * @returns {Array}
+ */
+Game.prototype.getBattleLevelList = function(user) {
+  var jackpot = this.parent,
+      data    = {normal: [], advance: []};
+
+  if(!this.isDoomsDayOver() && Array.isArray(jackpot.getNormalBattleLevels())) {
+    var normal = jackpot.getNormalBattleLevels();
+
+    for(var i in normal) {
+      data.normal.push({
+        uniqueId                : normal[i].uniqueId,
+        order                   : normal[i].order,
+        levelName               : normal[i].title,
+        defaultAvailableBids    : normal[i].defaultAvailableBids,
+        isLastLevel             : normal[i].isLastLevel,
+        prizeType               : 'BID',
+        prizeValue              : normal[i].getPrizeValue(),
+        isLocked                : i == 0 ? false : normal[i].isLockedForUser(normal[i-1], user),
+      });
+    }
+  }
+
+  if(Array.isArray(jackpot.getAdvanceBattleLevels())) {
+    var advance = jackpot.getAdvanceBattleLevels();
+
+    for(var k in advance) {
+      data.advance.push({
+        uniqueId                : advance[k].uniqueId,
+        order                   : advance[k].order,
+        levelName               : advance[k].title,
+        defaultAvailableBids    : advance[k].defaultAvailableBids,
+        isLastLevel             : advance[k].isLastLevel,
+        prizeType               : 'BID',
+        prizeValue              : advance[k].getPrizeValue(),
+        isLocked                : false,
+      });
+    }
+  }
+
+  return data;
+}
 export default JackpotGame;

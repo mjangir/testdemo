@@ -2,6 +2,7 @@
 import JackpotGame from './game';
 import BattleLevel from '../battle/level';
 import sqldb from '../../../sqldb';
+import _ from 'lodash';
 
 const UserModel                 = sqldb.User;
 const JackpotModel              = sqldb.Jackpot;
@@ -74,6 +75,24 @@ Jackpot.prototype.updateStatusInDB = function(status) {
   {
       return jackpot.updateAttributes({gameStatus: status});
   });
+}
+
+/**
+ * Get Normal Battle Levels
+ * 
+ * @returns {Array}
+ */
+Jackpot.prototype.getNormalBattleLevels = function() {
+  return _.filter(this.battleLevels, {battleType: 'NORMAL'});
+}
+
+/**
+ * Get Advance Battle Levels
+ * 
+ * @returns {Array}
+ */
+Jackpot.prototype.getAdvanceBattleLevels = function() {
+  return _.filter(this.battleLevels, {battleType: 'GAMBLING'});
 }
 
 export default Jackpot;

@@ -18,6 +18,8 @@ function BattleLevel(jackpot, data) {
   this.isLastLevel 				      = data.isLastLevel;
   this.order 						        = data.order;
   this.battleType               = data.battleType;
+  this.prizeValue               = data.prizeValue;
+  this.minBidsToGamb 				    = data.minBidsToGamb;
   this.games                    = [];
 }
 
@@ -30,4 +32,31 @@ BattleLevel.prototype.runEverySecond = function() {
   }
 }
 
+/**
+ * Is Level Locked For User
+ *
+ * @param  {BattleLevel}  previousLevel
+ * @param  {JackpotUser}  user
+ * @return {Boolean}
+ */
+BattleLevel.prototype.isLockedForUser = function(previousLevel, user)
+{
+	var minWinsToUnlockNext = previousLevel.minWinsToUnlockNext,
+		totalWinnings 		    = user.getTotalNormalBattleWins(previousLevel);
+
+	return totalWinnings < minWinsToUnlockNext;
+}
+
+/**
+ * Get Prize Value
+ * 
+ * @returns {*}
+ */
+BattleLevel.prototype.getPrizeValue = function() {
+  if(this.battleType == 'NORMAL') {
+    return this.prizeValue;
+  } else if(this.battleType == 'GAMBLING') {
+    return this.minPlayersRequired * this.minBidsToGamb;
+  }
+}
 export default BattleLevel;

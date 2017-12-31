@@ -24,21 +24,27 @@ export const EVT_EMIT_UPDATE_LEVEL_SCREEN           = 'update_level_screen';
 export const EVT_EMIT_UPDATE_BATTLE_GAME_SCREEN     = 'update_battle_game_screen';
 export const EVT_EMIT_SHOW_ERROR_POPUP              = 'show_error_popup';
 
-/**
- * Scene export constants
- */
+// Home Screen Scene export constants
 export const HOME_SCREEN_SCENE_GAME        = 'game';
 export const HOME_SCREEN_SCENE_WINNER      = 'winner';
 export const HOME_SCREEN_SCENE_NO_JACKPOT  = 'no_jackpot';
 
-/**
- * Component export constants
- */
+// Levels List Screen Scene export constants
+export const LEVEL_SCREEN_SCENE_LEVEL_LIST = 'level_list';
+
+
+
+// Home Screen Component export constants
 export const HOME_SCREEN_COMPONENT_HEADER  = 'header';
 export const HOME_SCREEN_COMPONENT_BIDS    = 'bids';
 export const HOME_SCREEN_COMPONENT_PLAYERS = 'players';
 export const HOME_SCREEN_COMPONENT_MY_INFO = 'my_info';
 export const HOME_SCREEN_COMPONENT_FOOTER  = 'footer';
+
+// Levels List Screen Component export constants
+export const LEVEL_SCREEN_COMPONENT_LEVELS = 'levels';
+
+
 
 /**
  * Messages
