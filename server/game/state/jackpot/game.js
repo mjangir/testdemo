@@ -335,6 +335,8 @@ Game.prototype.getBattleLevelList = function(user) {
         prizeType               : 'BID',
         prizeValue              : normal[i].getPrizeValue(),
         isLocked                : i == 0 ? false : normal[i].isLockedForUser(normal[i-1], user),
+        playersCount            : normal[i].getPlayersCount(),
+        activePlayersCount      : normal[i].getActivePlayersCount()
       });
     }
   }
@@ -352,10 +354,13 @@ Game.prototype.getBattleLevelList = function(user) {
         prizeType               : 'BID',
         prizeValue              : advance[k].getPrizeValue(),
         isLocked                : false,
+        playersCount            : advance[k].getPlayersCount(),
+        activePlayersCount      : advance[k].getActivePlayersCount()
       });
     }
   }
 
   return data;
 }
+
 export default JackpotGame;

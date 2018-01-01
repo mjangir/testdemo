@@ -1,3 +1,7 @@
+import BattleGame from "./game";
+import { generateRandomString } from '../../../utils/functions';
+import _ from 'lodash';
+
 
 /**
  * Battle Level
@@ -6,7 +10,7 @@
 function BattleLevel(jackpot, data) {
   this.jackpot                  = jackpot;
   this.id 						          = data.id;
-  this.uniqueId                 = data.uniqueId,
+  this.uniqueId                 = generateRandomString(20, 'aA');
   this.title 					          = data.levelName;
   this.minPlayersRequired 		  = data.minPlayersRequiredToStart;
   this.gameDuration 					  = data.duration;
@@ -59,4 +63,143 @@ BattleLevel.prototype.getPrizeValue = function() {
     return this.minPlayersRequired * this.minBidsToGamb;
   }
 }
+
+/**
+ * Get Active Players Count
+ * 
+ * @returns {Number}
+ */
+BattleLevel.prototype.getPlayersCount = function() {
+  var games = this.games,
+      count = 0;
+    
+  if(games.length) {
+    for(var k in games) {
+      count += games[k].getAllUsers().length;
+    }
+  }
+
+  return count;
+}
+
+/**
+ * Get Active Players Count
+ * 
+ * @returns {Number}
+ */
+BattleLevel.prototype.getActivePlayersCount = function() {
+  var games = this.games,
+      count = 0;
+    
+  if(games.length) {
+    for(var k in games) {
+      count += games[k].getActiveUsers().length;
+    }
+  }
+
+  return count;
+}
+
+/**
+ * Get All Games
+ * 
+ * @returns {Array}
+ */
+BattleLevel.prototype.getAllGames = function() {
+  return this.games;
+}
+
+/**
+ * Get Game By Unique ID
+ * 
+ * @param {String} uniqueId 
+ * @returns {BattleGame}
+ */
+BattleLevel.prototype.getGameByUniqueId = function(uniqueId) {
+  return _.find(this.games, {uniqueId: uniqueId});
+}
+
+/**
+ * Create New Game
+ * 
+ * @returns {Battle Game}
+ */
+BattleLevel.prototype.createNewGame = function() {
+  var game = new BattleGame(this);
+	this.games.push(game);
+	return game;
+}
+
+/**
+ * Get Available Game Slot
+ *
+ * @return {BattleGame}
+ */
+BattleLevel.prototype.getAvailableGameSlot = function() {
+	var games = this.games,
+		  users,
+		  minPlayers;
+
+	if(games.length > 0) {
+		for(var k in games) {
+			users 		  = games[k].getAllUsers(),
+			minPlayers 	= this.minPlayersRequired;
+
+			if(users.length < minPlayers) {
+				return games[k];
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Is User Able To Join
+ * 
+ * @param {JackpotUser} user 
+ * @returns {Boolean}
+ */
+BattleLevel.prototype.isUserAbleToJoin = function(user) {
+  if(this.battleType == 'NORMAL') {
+    return this.isUserAbleToJoinNormalBattle(user);
+  } else if(this.battleType == 'ADVANCE') {
+    return this.isUserAbleToJoinAdvanceBattle(user);
+  }
+}
+
+/**
+ * Is User Able To Join Normal Battle Level
+ * 
+ * @param {JackpotUser} user 
+ * @returns {Boolean}
+ */
+BattleLevel.prototype.isUserAbleToJoinNormalBattle = function(user) {
+  var jackpot 	= this.jackpot,
+      order 		= this.order,
+      prevOrder = Math.max(0, order - 1);
+
+	if(prevOrder == 0) {
+		return true;
+	} else {
+		var previousLevel 	= jackpot.getNormalBattleLevelByOrder(prevOrder),
+			  isLockedForUser = this.isLockedForUser(previousLevel, user);
+
+		return isLockedForUser !== false;
+	}
+}
+
+/**
+ * Is User Able To Join Advance Battle Level
+ * 
+ * @param {JackpotUser} user 
+ * @returns {Boolean}
+ */
+BattleLevel.prototype.isUserAbleToJoinAdvanceBattle = function(user) {
+  var userJackpotAvailableBids 	= user.getJackpotAvailableBids(),
+		  requiredAvailableBids 		= this.minBidsToGamb;
+
+	return userJackpotAvailableBids >= requiredAvailableBids;
+}
+
 export default BattleLevel;

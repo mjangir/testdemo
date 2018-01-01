@@ -119,7 +119,7 @@ JackpotUser.prototype.getJackpotAvailableBids = function() {
  * @returns {Number}
  */
 JackpotUser.prototype.getBattleAvailableBids = function(level, game) {
-  return this.availableBids[level.uniqueId][game.uniqueId];
+  return this.availableBids.battle[level.uniqueId][game.uniqueId];
 }
 
 /**

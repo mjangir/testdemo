@@ -95,4 +95,33 @@ Jackpot.prototype.getAdvanceBattleLevels = function() {
   return _.filter(this.battleLevels, {battleType: 'GAMBLING'});
 }
 
+/**
+ * Get Normal Battle Level By Order
+ * 
+ * @param {Number} order
+ * @returns {BattleLevel}
+ */
+Jackpot.prototype.getNormalBattleLevelByOrder = function(order) {
+  return _.find(this.getNormalBattleLevels(), {order: order});
+}
+
+/**
+ * Get Advance Battle Level By Order
+ * 
+ * @param {Number} order
+ * @returns {BattleLevel}
+ */
+Jackpot.prototype.getAdvanceBattleLevelByOrder = function(order) {
+  return _.find(this.getAdvanceBattleLevels(), {order: order});
+}
+
+/**
+ * Get Battle Level By ID
+ * 
+ * @param {String} uniqueId 
+ */
+Jackpot.prototype.getBattleLevelById = function(uniqueId) {
+  return _.find(this.battleLevels, {uniqueId: uniqueId});
+}
+
 export default Jackpot;
