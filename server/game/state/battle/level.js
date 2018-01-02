@@ -70,12 +70,16 @@ BattleLevel.prototype.getPrizeValue = function() {
  * @returns {Number}
  */
 BattleLevel.prototype.getPlayersCount = function() {
-  var games = this.games,
-      count = 0;
-    
-  if(games.length) {
-    for(var k in games) {
-      count += games[k].getAllUsers().length;
+  var jackpot = this.jackpot,
+      game    = jackpot.game,
+      users   = game.getAllUsers(),
+      count   = 0;
+
+  if(users.length > 0) {
+    for(var k in users) {
+      if(users[k].gameStatus != 'QUITTED' && this.isUserAbleToJoin(users[k])) {
+        count += 1;
+      }
     }
   }
 
@@ -88,12 +92,12 @@ BattleLevel.prototype.getPlayersCount = function() {
  * @returns {Number}
  */
 BattleLevel.prototype.getActivePlayersCount = function() {
-  var games = this.games,
-      count = 0;
-    
-  if(games.length) {
-    for(var k in games) {
-      count += games[k].getActiveUsers().length;
+  var battleGames = this.getAllGames(),
+      count       = 0;
+
+  if(battleGames.length > 0) {
+    for(var k in battleGames) {
+      count += battleGames[k].getAllUsers().length;
     }
   }
 
