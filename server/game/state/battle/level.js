@@ -77,7 +77,7 @@ BattleLevel.prototype.getPlayersCount = function() {
 
   if(users.length > 0) {
     for(var k in users) {
-      if(users[k].gameStatus != 'QUITTED' && this.isUserAbleToJoin(users[k])) {
+      if(users[k].gameStatus != 'QUITTED' && (this.battleType == 'ADVANCE' || (this.order == 1 || !this.isLockedForUser(this, users[k])))) {
         count += 1;
       }
     }
