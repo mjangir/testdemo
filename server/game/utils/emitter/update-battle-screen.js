@@ -30,7 +30,7 @@ export default function(game, scene, components, socket, data) {
     break;
 
     case BATTLE_SCREEN_SCENE_WINNER:
-      emitWinnerScreen();
+      emitWinnerScreen(game, data);
     break;
 
     case BATTLE_SCREEN_SCENE_COUNTDOWN:
@@ -86,6 +86,27 @@ function emitGameScreen(game, components) {
   
         user.socket.emit(EVT_EMIT_UPDATE_BATTLE_GAME_SCREEN, data);
       }
+    }
+  }
+}
+
+/**
+ * Emit Winner Data
+ * 
+ * @param {BattleGame} game
+ * @param {Object} data
+ * @returns {*}
+ */
+function emitWinnerScreen(game, data) {
+  var users = game.getAllUsers();
+
+  if(users.length > 0) {
+    for(var i in users) {
+      var user = users[i];
+      user.socket.emit(EVT_EMIT_UPDATE_BATTLE_GAME_SCREEN, {
+        scene: BATTLE_SCREEN_SCENE_WINNER,
+        data: data
+      });
     }
   }
 }

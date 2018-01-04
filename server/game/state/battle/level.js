@@ -206,4 +206,42 @@ BattleLevel.prototype.isUserAbleToJoinAdvanceBattle = function(user) {
 	return userJackpotAvailableBids >= requiredAvailableBids;
 }
 
+/**
+ * Get Last Bid Winner Prize
+ * 
+ * @returns {Number}
+ */
+BattleLevel.prototype.getLastBidWinnerPrize = function()
+{
+  var prizeValue 	= this.getPrizeValue(),
+      percent 	  = parseFloat(this.lastBidWinnerPercent, 10),
+      percent 	  = !isNaN(percent) ? percent : 100;
+
+	return parseInt((percent/100 * prizeValue), 10);
+}
+
+/**
+ * Get Longest Bid Winner Prize
+ * 
+ * @returns {Number}
+ */
+BattleLevel.prototype.getLongestBidWinnerPrize = function()
+{
+  var prizeValue 	= this.getPrizeValue(),
+      percent 	  = parseFloat(this.longestBidWinnerPercent, 10),
+      percent 	  = !isNaN(percent) ? percent : 100;
+
+	return parseInt((percent/100 * prizeValue), 10);
+}
+
+/**
+ * Get Single Winner Prize
+ * 
+ * @returns {Number}
+ */
+BattleLevel.prototype.getSingleWinnerPrize = function()
+{
+  return this.getPrizeValue();
+}
+
 export default BattleLevel;

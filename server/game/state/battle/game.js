@@ -2,6 +2,7 @@ import Game from '../common/game';
 import JackpotUser from '../jackpot/jackpot-user';
 import { convertAmountToCommaString, getUserObjectById } from '../../../utils/functions';
 import updateBattleScreen from '../../utils/emitter/update-battle-screen';
+import updateHomeScreen from '../../utils/emitter/update-home-screen';
 import showErrorPopup from '../../utils/emitter/show-error-popup';
 import {
   BATTLE_SCREEN_SCENE_GAME,
@@ -17,7 +18,8 @@ import {
 
   CONSECUTIVE_BIDS_ERROR,
 
-  EVT_EMIT_UPDATE_BATTLE_GAME_SCREEN
+  HOME_SCREEN_SCENE_GAME,
+  HOME_SCREEN_COMPONENT_MY_INFO
 } from '../../constants';
 import _ from 'lodash';
 
@@ -318,6 +320,8 @@ BattleGame.prototype.startGame = function() {
  * Run Every Second
  */
 BattleGame.prototype.runEverySecond = function() {
+  var forceFinish = false;
+
   if(this.getClock('game').remaining > 0 && this.gameStatus == 'STARTED') {
     this.countDown();
     updateBattleScreen(this, BATTLE_SCREEN_SCENE_GAME, [
@@ -326,6 +330,14 @@ BattleGame.prototype.runEverySecond = function() {
       BATTLE_SCREEN_COMPONENT_BIDS,
       BATTLE_SCREEN_COMPONENT_FOOTER
     ]);
+
+    if(this.jackpotGame.getClock('doomsday').remaining <= 0 || this.jackpotGame.getClock('game').remaining <= 0) {
+      if(this.parent.battleType == 'NORMAL' || (this.parent.battleType == 'GAMBLING' && this.jackpotGame.getClock('game').remaining <= 0)) {
+        this.finishGame(true);
+      }
+    } else {
+      this.finishGame();
+    }
   }
 }
 
@@ -351,6 +363,136 @@ BattleGame.prototype.placeBid = function(userId, socket) {
       ]);
     }
   }.bind(this));
+}
+
+/**
+ * Finish Game
+ * 
+ * @param {Boolean} forceFinish 
+ */
+BattleGame.prototype.finishGame = function(forceFinish)
+{
+	if((this.getClock('game').remaining <= 0 || forceFinish == true) && this.gameStatus != 'FINISHED')
+	{
+    // Set The Game Status FINISHED
+    this.gameStatus = 'FINISHED';
+    
+		var lastBidDuration  	  = this.bidContainer.getLastBidDuration(),
+        lastBidUserId  		  = this.bidContainer.getLastBidUserId(),
+        longestBidDuration  = this.bidContainer.getLongestBidDuration(),
+        longestBidUserId  	= this.bidContainer.getLongestBidUserId(),
+        bothAreSame 		    = lastBidUserId === longestBidUserId,
+        lastBidUser 		    = lastBidUserId != null ? this.getUser(String(lastBidUserId)) : null,
+        longestBidUser 		  = longestBidUserId != null ? this.getUser(String(longestBidUserId)) : null,
+        excluedUserIds 		  = [],
+        winners,
+        winnerIds;
+
+    if(lastBidUser instanceof JackpotUser && longestBidUser instanceof JackpotUser)
+    {
+      winners   = bothAreSame ? [lastBidUser] : [lastBidUser, longestBidUser];
+      winnerIds = bothAreSame ? [String(lastBidUserId)] : [String(lastBidUserId), String(longestBidUserId)];
+      this.updateUserInstanceOnFinish(winners, winnerIds);
+    }
+    else if(lastBidUser instanceof JackpotUser && !(longestBidUser instanceof JackpotUser))
+    {
+      this.updateUserInstanceOnFinish([lastBidUser], [String(lastBidUserId)]);
+    }
+    else if(longestBidUser instanceof JackpotUser && !(lastBidUser instanceof JackpotUser))
+    {
+      this.updateUserInstanceOnFinish([longestBidUser], [String(longestBidUserId)]);
+    }
+
+    updateBattleScreen(this, BATTLE_SCREEN_SCENE_WINNER, null, null, this.buildFinalFinishData(lastBidUser, longestBidUser, bothAreSame, forceFinish));
+    updateHomeScreen(this.jackpotGame, HOME_SCREEN_SCENE_GAME, [
+      HOME_SCREEN_COMPONENT_MY_INFO
+    ], null, this.parent, this);
+  }
+
+}
+
+/**
+ * Build Final Data
+ * 
+ * @param {JackpotUser} lastBidUser 
+ * @param {JackpotUser} longestBidUser 
+ * @param {Boolean} bothAreSame 
+ * @param {Boolean} forceFinish 
+ */
+BattleGame.prototype.buildFinalFinishData = function(lastBidUser, longestBidUser, bothAreSame, forceFinish)
+{
+  var finalData = {status: true};
+  
+  // For last bid user
+  if(lastBidUser instanceof JackpotUser)
+  {
+    var lastBidUserInfo = getUserObjectById(lastBidUser.userId);
+
+    finalData.lastBidWinner = {
+      id:   lastBidUserInfo.id,
+      name: lastBidUserInfo.name
+    }
+  }
+  else
+  {
+    finalData.lastBidWinner = null
+  }
+
+  // For longest bid user
+  if(longestBidUser instanceof JackpotUser)
+  {
+    var longestBidUserInfo = getUserObjectById(longestBidUser.userId);
+
+    finalData.longestBidWinner = {
+      id:   longestBidUserInfo.id,
+      name: longestBidUserInfo.name
+    }
+  }
+  else
+  {
+    finalData.longestBidWinner = null
+  }
+
+  finalData.bothAreSame = bothAreSame;
+
+  finalData.forceFinish = forceFinish == true;
+
+  return finalData;
+}
+
+/**
+ * Update User Instance On Finish
+ * 
+ * @param {Array} winners 
+ * @param {Array} winnerIds 
+ */
+BattleGame.prototype.updateUserInstanceOnFinish = function(winners, winnerIds)
+{
+	var lastWinnerPrize 	  = this.parent.getLastBidWinnerPrize(),
+	    longestWinnerPrize 	= this.parent.getLongestBidWinnerPrize(),
+	    singleWinnerPrize 	= this.parent.getSingleWinnerPrize(),
+      users 				      = this.getAllUsers();
+
+	if(winners.length > 0)
+	{
+		if(winners.length == 1)
+		{
+			winners[0].afterBattleGameFinished(this, this.parent, 'WINNER', singleWinnerPrize);
+		}
+		else if(winners.length == 2)
+		{
+			winners[0].afterBattleGameFinished(this, this.parent, 'WINNER', lastWinnerPrize);
+			winners[1].afterBattleGameFinished(this, this.parent, 'WINNER', longestWinnerPrize);
+		}
+
+		for(var k in users)
+    {
+      if(winnerIds.indexOf(users[k].userId) <= -1)
+      {
+        users[k].afterBattleGameFinished(this, this.parent, 'LOOSER');
+      }
+    }
+	}
 }
 
 export default BattleGame;

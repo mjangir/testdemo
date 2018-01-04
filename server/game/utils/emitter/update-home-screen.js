@@ -23,11 +23,11 @@ import _ from 'lodash';
  * @param {Array} components 
  * @returns {*}
  */
-export default function(game, scene, components, socket) {
+export default function(game, scene, components, socket, battleLevel, battleGame) {
 
   switch (scene) {
     case HOME_SCREEN_SCENE_GAME:
-      emitGameScreen(game, components, socket);
+      emitGameScreen(game, components, battleLevel, battleGame);
     break;
 
     case HOME_SCREEN_SCENE_WINNER:
@@ -50,11 +50,17 @@ export default function(game, scene, components, socket) {
  * @param {Array} components 
  * @returns {*}
  */
-function emitGameScreen(game, components) {
-  var users = game.getAllUsers(),
+function emitGameScreen(game, components, battleLevel, battleGame) {
+  var users,
       data  = {
         scene: HOME_SCREEN_SCENE_GAME
       };
+
+  if(typeof battleGame != 'undefined') {
+    users = battleGame.getAllUsers();
+  } else {
+    users = game.getAllUsers();
+  }
   
   if(_.contains(components, HOME_SCREEN_COMPONENT_HEADER) || typeof components == 'undefined') {
     data[HOME_SCREEN_COMPONENT_HEADER] = game.getGameHeaderInfo();
