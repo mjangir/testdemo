@@ -197,7 +197,7 @@ JackpotUser.prototype.increaseBattleAvailableBids = function(level, game, count)
   
   availableBids += count || 1;
 
-  this.setBattleAvailableBids(availableBids);
+  this.setBattleAvailableBids(level, game, availableBids);
 }
 
 /**
@@ -225,13 +225,11 @@ JackpotUser.prototype.decreaseJackpotAvailableBids = function(count) {
  * @returns {*}
  */
 JackpotUser.prototype.decreaseBattleAvailableBids = function(level, game, count) {
-  var availableBids = this.getJackpotAvailableBids();
+  var availableBids = this.getBattleAvailableBids(level, game);
   
-  if(availableBids > 0) {
-    availableBids -= count || 1;
-  }
+  availableBids -= count || 1;
 
-  this.setJackpotAvailableBids(availableBids);
+  this.setBattleAvailableBids(level, game, availableBids);
 }
 
 /**
