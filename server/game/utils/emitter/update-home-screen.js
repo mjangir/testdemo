@@ -31,7 +31,7 @@ export default function(game, scene, components, socket, battleLevel, battleGame
     break;
 
     case HOME_SCREEN_SCENE_WINNER:
-      emitWinnerScreen();
+      emitWinnerScreen(game);
     break;
 
     case HOME_SCREEN_SCENE_NO_JACKPOT:
@@ -102,5 +102,19 @@ function emitNoJackpotScreen(socket) {
   socket.emit(EVT_EMIT_UPDATE_HOME_SCREEN, {
     scene: HOME_SCREEN_SCENE_NO_JACKPOT,
     message: MESSAGE_NO_JACKPOT_AVAILABLE
+  });
+}
+
+/**
+ * Emit Winner Data
+ * 
+ * @param {JackpotGame} game 
+ */
+function emitWinnerScreen(game) {
+  var winnerData  = game.getWinnerData(),
+      namespace   = global.ticktockGameState.jackpotSocketNs;
+
+  namespace.in(game.getRoomName()).emit(EVT_EMIT_UPDATE_HOME_SCREEN, {
+    winner: winnerData
   });
 }

@@ -1,11 +1,14 @@
 import Game from '../common/game';
 import JackpotUser from './jackpot-user';
 import _ from 'lodash';
-import { convertAmountToCommaString } from '../../../utils/functions';
+import { convertAmountToCommaString, getUserObjectById } from '../../../utils/functions';
 import updateHomeScreen from '../../utils/emitter/update-home-screen';
 import showErrorPopup from '../../utils/emitter/show-error-popup';
+import updateAppHeader from '../../utils/emitter/update-app-header';
 import { 
   HOME_SCREEN_SCENE_GAME,
+  HOME_SCREEN_SCENE_WINNER,
+
   HOME_SCREEN_COMPONENT_HEADER,
   HOME_SCREEN_COMPONENT_BIDS,
   HOME_SCREEN_COMPONENT_MY_INFO,
@@ -277,7 +280,7 @@ JackpotGame.prototype.updateStatusInDB = function(status)
 /**
  * Run Every Second
  */
-Game.prototype.runEverySecond = function() {
+JackpotGame.prototype.runEverySecond = function() {
   if(this.getClock('game').remaining > 0 && this.gameStatus == 'STARTED') {
     this.countDown();
     updateHomeScreen(this, HOME_SCREEN_SCENE_GAME, [
@@ -285,7 +288,48 @@ Game.prototype.runEverySecond = function() {
       HOME_SCREEN_COMPONENT_BIDS,
       HOME_SCREEN_COMPONENT_FOOTER
     ]);
+    updateAppHeader(this);
+
+    //this.finishGame();
   }
+}
+
+/**
+ * Finish Game
+ */
+JackpotGame.prototype.finishGame = function() {
+  if(this.getClock('game').remaining == 0 && this.gameStatus == 'STARTED') {
+    var context     = this,
+        winnerData  = this.getWinnerData();
+
+    this.gameStatus = 'FINISHED';
+
+    updateHomeScreen(this, HOME_SCREEN_SCENE_WINNER);
+
+    setTimeout(function()
+    {
+        //context.saveDataInDB(winnerData);
+    });
+  }
+}
+
+/**
+ * Get Winner Data
+ */
+JackpotGame.prototype.getWinnerData = function() {
+  var lastBidDuration  	  = this.bidContainer.getLastBidDuration(),
+      lastBidUserId  		  = this.bidContainer.getLastBidUserId(),
+      longestBidDuration  = this.bidContainer.getLongestBidDuration(),
+      longestBidUserId  	= this.bidContainer.getLongestBidUserId(),
+      bothAreSame 		    = lastBidUserId === longestBidUserId,
+      lastBidUser 		    = lastBidUserId != null ? getUserObjectById(String(lastBidUserId)) : false,
+      longestBidUser 		  = longestBidUserId != null ? getUserObjectById(String(longestBidUserId)) : false;
+
+  return {
+    longestBidUser: longestBidUser,
+    lastBidUser:    lastBidUser,
+    bothAreSame:    bothAreSame
+  };
 }
 
 /**
@@ -293,7 +337,7 @@ Game.prototype.runEverySecond = function() {
  * 
  * @param {String} userId 
  */
-Game.prototype.placeBid = function(userId, socket) {
+JackpotGame.prototype.placeBid = function(userId, socket) {
   var user = this.getUserById(userId);
 
   if(user && this.isUserBidConsecutive(user)) {
@@ -318,7 +362,7 @@ Game.prototype.placeBid = function(userId, socket) {
  * @returns {JackpotUser}
  * @returns {Array}
  */
-Game.prototype.getBattleLevelList = function(user) {
+JackpotGame.prototype.getBattleLevelList = function(user) {
   var jackpot = this.parent,
       data    = {normal: [], advance: []};
 
