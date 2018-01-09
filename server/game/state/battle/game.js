@@ -359,7 +359,8 @@ BattleGame.prototype.placeBid = function(userId, socket) {
       user.afterPlacedBid(bidContainer, parent, socket, bid);
       this.getClock('game').increaseBy(this.parent.increaseSecondsOnBid);
       updateBattleScreen(this, BATTLE_SCREEN_SCENE_GAME, [
-        BATTLE_SCREEN_COMPONENT_MY_INFO
+        BATTLE_SCREEN_COMPONENT_MY_INFO,
+        BATTLE_SCREEN_COMPONENT_PLAYERS
       ]);
     }
   }.bind(this));
