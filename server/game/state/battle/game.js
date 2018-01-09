@@ -219,7 +219,6 @@ BattleGame.prototype.getPlayersInfo = function() {
 		userObj         = getUserObjectById(user.userId);
 		placedBids 		  = user.getBattlePlacedBids(this.parent, this).length;
 		availableBids 	= user.getBattleAvailableBids(this.parent, this);
-		remainingBids 	= availableBids - placedBids;
 
 		players.push({
 			id            : user.userId,
@@ -227,7 +226,7 @@ BattleGame.prototype.getPlayersInfo = function() {
 			name 			    : userObj.name,
 			picture 		  : user.photo,
 			totalBids 		: placedBids,
-			remainingBids : remainingBids
+			remainingBids : availableBids
 		});
 	}
 
