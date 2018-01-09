@@ -23,7 +23,7 @@ export const EVT_EMIT_UPDATE_HOME_SCREEN            = 'update_home_screen';
 export const EVT_EMIT_UPDATE_LEVEL_SCREEN           = 'update_level_screen';
 export const EVT_EMIT_UPDATE_BATTLE_GAME_SCREEN     = 'update_battle_game_screen';
 export const EVT_EMIT_SHOW_ERROR_POPUP              = 'show_error_popup';
-export const EVT_EMIT_UPDATE_APP_HEADER             = 'update_home_header';
+export const EVT_EMIT_UPDATE_APP_HEADER             = 'update_app_header';
 
 // Home Screen Scene export constants
 export const HOME_SCREEN_SCENE_GAME        = 'game';
