@@ -45,8 +45,8 @@ BattleLevel.prototype.runEverySecond = function() {
  */
 BattleLevel.prototype.isLockedForUser = function(previousLevel, user)
 {
-	var minWinsToUnlockNext = previousLevel.minWinsToUnlockNext,
-		totalWinnings 		    = user.getTotalNormalBattleWins(previousLevel);
+	var minWinsToUnlockNext = parseInt(previousLevel.minWinsToUnlockNext, 10),
+    totalWinnings 		    = parseInt(user.getTotalNormalBattleWins(previousLevel), 10);
 
 	return totalWinnings < minWinsToUnlockNext;
 }
@@ -187,9 +187,9 @@ BattleLevel.prototype.isUserAbleToJoinNormalBattle = function(user) {
 		return true;
 	} else {
 		var previousLevel 	= jackpot.getNormalBattleLevelByOrder(prevOrder),
-			  isLockedForUser = this.isLockedForUser(previousLevel, user);
+        isLockedForUser = this.isLockedForUser(previousLevel, user);
 
-		return isLockedForUser !== false;
+		return !isLockedForUser;
 	}
 }
 

@@ -53,7 +53,6 @@ function handleJoinBattle(socket, data)
 
     // Join the battle
     getUserBidBattleGame(battleLevel, user).then(function(data) {
-      console.log(data);
       joinUserToBidBattleGame(data.level, data.user, data.game, socket, function(level, user, game, socket) {
         updateBattleScreen(game, BATTLE_SCREEN_SCENE_GAME);
         game.startGame();
