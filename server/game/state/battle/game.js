@@ -330,10 +330,10 @@ BattleGame.prototype.runEverySecond = function() {
       BATTLE_SCREEN_COMPONENT_FOOTER
     ]);
 
-    if(this.jackpotGame.getClock('doomsday').remaining <= 0 || this.jackpotGame.getClock('game').remaining <= 0) {
-      if(this.parent.battleType == 'NORMAL' || (this.parent.battleType == 'GAMBLING' && this.jackpotGame.getClock('game').remaining <= 0)) {
-        this.finishGame(true);
-      }
+    if(this.jackpotGame.getClock('doomsday').remaining <= 0 && this.parent.battleType == 'NORMAL') {
+      this.finishGame(true);
+    } else if(this.jackpotGame.getClock('game').remaining <= 0 && this.parent.battleType == 'ADVANCE') {
+      this.finishGame(true);
     } else {
       this.finishGame();
     }

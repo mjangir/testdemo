@@ -63,10 +63,11 @@ export const BATTLE_SCREEN_COMPONENT_FOOTER         = 'footer';
 /**
  * Messages
  */
-export const MESSAGE_NO_JACKPOT_AVAILABLE             = 'No Jackpot Available To Play Right Now. Please Come Later.';
-export const MESSAGE_INVALID_INPUT_PROVIDED           = 'Invalid Input Parameters Provided';
-export const MESSAGE_NO_ENOUGH_BID_TO_PLACE           = 'You Don\'t Have Enough Bids To Place';
-export const CONSECUTIVE_BIDS_ERROR                   = 'You Cannot Put Consecutive Bids';
-export const MESSAGE_NOT_ABLE_TO_JOIN_NORMAL_BATTLE   = 'You are not able to join this battle. Please check your unlocked levels.';
-export const MESSAGE_NOT_ABLE_TO_JOIN_ADVANCE_BATTLE  = 'You do not have enough bid bank to join this level.';
-export const MESSAGE_SOMETHING_WENT_WRONG             = 'Something went wrong. Please try again later.';
+export const MESSAGE_NO_JACKPOT_AVAILABLE                               = 'No Jackpot Available To Play Right Now. Please Come Later.';
+export const MESSAGE_INVALID_INPUT_PROVIDED                             = 'Invalid Input Parameters Provided';
+export const MESSAGE_NO_ENOUGH_BID_TO_PLACE                             = 'You Don\'t Have Enough Bids To Place';
+export const CONSECUTIVE_BIDS_ERROR                                     = 'You Cannot Put Consecutive Bids';
+export const MESSAGE_NOT_ABLE_TO_JOIN_NORMAL_BATTLE                     = 'You are not able to join this battle. Please check your unlocked levels.';
+export const MESSAGE_NOT_ABLE_TO_JOIN_ADVANCE_BATTLE                    = 'You do not have enough bid bank to join this level.';
+export const MESSAGE_SOMETHING_WENT_WRONG                               = 'Something went wrong. Please try again later.';
+export const MESSAGE_NOT_ABLE_TO_JOIN_ADVANCE_BATTLE_DOOMSDAY_NOT_OVER  = 'You can only join advance battle once the doomsday clock is over';

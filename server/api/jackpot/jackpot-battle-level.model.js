@@ -13,7 +13,7 @@ module.exports = function(sequelize, DataTypes)
 
     battleType: {
       field         : "battle_type",
-      type          : DataTypes.ENUM('NORMAL','GAMBLING'),
+      type          : DataTypes.ENUM('NORMAL','ADVANCE'),
       allowNull     : false,
       defaultValue  : 'NORMAL',
       comment       : "Type of battle"

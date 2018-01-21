@@ -378,18 +378,23 @@ JackpotUser.prototype.getNormalBattleLongestStreak = function() {
  * @returns {Number}
  */
 JackpotUser.prototype.getAdvanceBattleLongestStreak = function() {
-  return this.getLongestBattleStreak(_.filter(this.battleWins, {battleType: 'GAMBLING'}));
+  return this.getLongestBattleStreak(_.filter(this.battleWins, {battleType: 'ADVANCE'}));
 }
 
 /**
  * Get Total Normal Battle Wins
  * 
+ * @param {Level} level
  * @returns {Number}
  */
-JackpotUser.prototype.getTotalNormalBattleWins = function() {
+JackpotUser.prototype.getTotalNormalBattleWins = function(level) {
   var wins    = _.filter(this.battleWins, {battleType: 'NORMAL'});
   var records = wins ? wins.filter(function(item) {
-    return item.winningStatus == 'WINNER';
+    if(typeof level != 'undefined') {
+      return item.winningStatus == 'WINNER' && item.levelUniqueId == level.uniqueId;
+    } else {
+      return item.winningStatus == 'WINNER';
+    }
   }) : [];
 
   return records.length;
@@ -398,12 +403,17 @@ JackpotUser.prototype.getTotalNormalBattleWins = function() {
 /**
  * Get Total Advance Battle Wins
  * 
+ * @param {Level} level
  * @returns {Number}
  */
-JackpotUser.prototype.getTotalAdvanceBattleWins = function() {
-  var wins    = _.filter(this.battleWins, {battleType: 'GAMBLING'});
+JackpotUser.prototype.getTotalAdvanceBattleWins = function(level) {
+  var wins    = _.filter(this.battleWins, {battleType: 'ADVANCE'});
   var records = wins ? wins.filter(function(item) {
-    return item.winningStatus == 'WINNER';
+    if(typeof level != 'undefined') {
+      return item.winningStatus == 'WINNER' && item.levelUniqueId == level.uniqueId;
+    } else {
+      return item.winningStatus == 'WINNER';
+    }
   }) : [];
 
   return records.length;
@@ -439,7 +449,7 @@ JackpotUser.prototype.getTotalNormalBattleLooses = function() {
  * @returns {Number}
  */
 JackpotUser.prototype.getTotalAdvanceBattleLooses = function() {
-  var wins = _.filter(this.battleWins, {battleType: 'GAMBLING'});
+  var wins = _.filter(this.battleWins, {battleType: 'ADVANCE'});
   
   var records = wins ? wins.filter(function(item) {
     return item.winningStatus == 'LOOSER';

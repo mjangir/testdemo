@@ -8,7 +8,8 @@ import {
   MESSAGE_NOT_ABLE_TO_JOIN_NORMAL_BATTLE,
   MESSAGE_NOT_ABLE_TO_JOIN_ADVANCE_BATTLE,
   MESSAGE_SOMETHING_WENT_WRONG,
-  BATTLE_SCREEN_SCENE_GAME
+  BATTLE_SCREEN_SCENE_GAME,
+  MESSAGE_NOT_ABLE_TO_JOIN_ADVANCE_BATTLE_DOOMSDAY_NOT_OVER
  } from '../../constants';
 
 function handleJoinBattle(socket, data)
@@ -36,23 +37,23 @@ function handleJoinBattle(socket, data)
       showErrorPopup(socket, MESSAGE_INVALID_INPUT_PROVIDED);
       return;
     }
-
-    // Check if user is able to join this battle level
-    if(!battleLevel.isUserAbleToJoin(user)) {
-      showErrorPopup(socket, MESSAGE_INVALID_INPUT_PROVIDED);
-    }
-
+    
     // Check user is eligible to join the battle level
     if(battleLevel.battleType == 'NORMAL' && !battleLevel.isUserAbleToJoin(user)) {
       showErrorPopup(socket, MESSAGE_NOT_ABLE_TO_JOIN_NORMAL_BATTLE);
       return;
-    } else if(battleLevel.battleType == 'ADVANCE' && !battleLevel.isUserAbleToJoin(user)) {
-      showErrorPopup(socket, MESSAGE_NOT_ABLE_TO_JOIN_ADVANCE_BATTLE);
+    } else if(battleLevel.battleType == 'ADVANCE' && (!jackpotGame.isDoomsDayOver() || !battleLevel.isUserAbleToJoin(user))) {
+      if(!jackpotGame.isDoomsDayOver()) {
+        showErrorPopup(socket, MESSAGE_NOT_ABLE_TO_JOIN_ADVANCE_BATTLE_DOOMSDAY_NOT_OVER);
+      } else if(!battleLevel.isUserAbleToJoin(user)) {
+        showErrorPopup(socket, MESSAGE_NOT_ABLE_TO_JOIN_ADVANCE_BATTLE);
+      }
       return;
     }
 
     // Join the battle
     getUserBidBattleGame(battleLevel, user).then(function(data) {
+      console.log(data);
       joinUserToBidBattleGame(data.level, data.user, data.game, socket, function(level, user, game, socket) {
         updateBattleScreen(game, BATTLE_SCREEN_SCENE_GAME);
         game.startGame();

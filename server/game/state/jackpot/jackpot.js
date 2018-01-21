@@ -92,7 +92,7 @@ Jackpot.prototype.getNormalBattleLevels = function() {
  * @returns {Array}
  */
 Jackpot.prototype.getAdvanceBattleLevels = function() {
-  return _.filter(this.battleLevels, {battleType: 'GAMBLING'});
+  return _.filter(this.battleLevels, {battleType: 'ADVANCE'});
 }
 
 /**

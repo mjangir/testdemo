@@ -232,7 +232,7 @@ Jackpot.prototype.addBattleLevels = function(data)
             {
                 this.normalBattleLevels.push(new NormalBattleLevel(this, levels[k]));
             }
-            else if(levels[k].battleType == 'GAMBLING')
+            else if(levels[k].battleType == 'ADVANCE')
             {
                 this.advanceBattleLevels.push(new AdvanceBattleLevel(this, levels[k]));
             }

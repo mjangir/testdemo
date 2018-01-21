@@ -59,7 +59,7 @@ BattleLevel.prototype.isLockedForUser = function(previousLevel, user)
 BattleLevel.prototype.getPrizeValue = function() {
   if(this.battleType == 'NORMAL') {
     return this.prizeValue;
-  } else if(this.battleType == 'GAMBLING') {
+  } else if(this.battleType == 'ADVANCE') {
     return this.minPlayersRequired * this.minBidsToGamb;
   }
 }
@@ -181,9 +181,9 @@ BattleLevel.prototype.isUserAbleToJoin = function(user) {
 BattleLevel.prototype.isUserAbleToJoinNormalBattle = function(user) {
   var jackpot 	= this.jackpot,
       order 		= this.order,
-      prevOrder = Math.max(0, order - 1);
+      prevOrder = Math.max(1, order - 1);
 
-	if(prevOrder == 0) {
+	if(prevOrder == 1) {
 		return true;
 	} else {
 		var previousLevel 	= jackpot.getNormalBattleLevelByOrder(prevOrder),
