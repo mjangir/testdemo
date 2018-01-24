@@ -19,7 +19,8 @@ import {
   CONSECUTIVE_BIDS_ERROR,
 
   HOME_SCREEN_SCENE_GAME,
-  HOME_SCREEN_COMPONENT_MY_INFO
+  HOME_SCREEN_COMPONENT_MY_INFO,
+  HOME_SCREEN_COMPONENT_PLAYERS
 } from '../../constants';
 import _ from 'lodash';
 
@@ -150,8 +151,14 @@ BattleGame.prototype.getUser = function(user) {
 /**
  * On User Added
  */
-BattleGame.prototype.onUserAdded = function() {
-  // on user added
+BattleGame.prototype.onUserAdded = function(user) {
+  if(this.parent.battleType == 'ADVANCE') {
+    user.decreaseJackpotAvailableBids(parseInt(this.parent.minBidsToGamb, 10));
+    updateHomeScreen(this.jackpotGame, HOME_SCREEN_SCENE_GAME, [
+      HOME_SCREEN_COMPONENT_MY_INFO,
+      HOME_SCREEN_COMPONENT_PLAYERS
+    ], null, this.parent, this);
+  }
 }
 
 /**

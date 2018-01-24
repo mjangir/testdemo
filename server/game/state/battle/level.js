@@ -37,6 +37,27 @@ BattleLevel.prototype.runEverySecond = function() {
 }
 
 /**
+ * Get Wins To Unlock Next Level
+ * 
+ * @param  {JackpotUser} user
+ * @return {Number}
+ */
+BattleLevel.prototype.getWinsToUnlockNextLevel = function(user)
+{
+  var totalWins         = 0,
+      totalRequired     = 0,
+      remainingRequired = 0;
+
+  if(this.battleType == 'NORMAL') {
+    totalWins         = user.getTotalNormalBattleWins(this);
+    totalRequired     = parseInt(this.minWinsToUnlockNext, 10);
+    remainingRequired = totalRequired - totalWins;
+  }
+
+  return remainingRequired <= 0 ? 0 : remainingRequired;
+}
+
+/**
  * Is Level Locked For User
  *
  * @param  {BattleLevel}  previousLevel
