@@ -5,6 +5,8 @@ import { convertAmountToCommaString, getUserObjectById } from '../../../utils/fu
 import updateHomeScreen from '../../utils/emitter/update-home-screen';
 import showErrorPopup from '../../utils/emitter/show-error-popup';
 import updateAppHeader from '../../utils/emitter/update-app-header';
+import updateLevelScreen from '../../utils/emitter/update-level-screen';
+
 import { 
   HOME_SCREEN_SCENE_GAME,
   HOME_SCREEN_SCENE_WINNER,
@@ -23,8 +25,9 @@ import {
  */
 function JackpotGame(parent) {
   Game.call(this);
-  this.parent = parent;
-  this.users  = [];
+  this.parent           = parent;
+  this.users            = [];
+  this.doomsdayExpired  = false;
   this.setTimeclocks();
 }
 
@@ -290,7 +293,24 @@ JackpotGame.prototype.runEverySecond = function() {
     ]);
     updateAppHeader(this);
 
+    if(this.isDoomsDayOver() && !this.doomsdayExpired) {
+      this.doomsdayExpired = true;
+      this.updateBattleLevelScreen();
+    }
+
     //this.finishGame();
+  }
+}
+
+/**
+ * Update Battle Level Screen
+ */
+JackpotGame.prototype.updateBattleLevelScreen = function() {
+
+  var users = this.getAllUsers();
+
+  for(var i = 0; i < users.length; i++) {
+    updateLevelScreen(this, users[i]);
   }
 }
 
