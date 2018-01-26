@@ -298,7 +298,7 @@ JackpotGame.prototype.runEverySecond = function() {
       this.updateBattleLevelScreen();
     }
 
-    //this.finishGame();
+    this.finishGame();
   }
 }
 
@@ -319,8 +319,6 @@ JackpotGame.prototype.updateBattleLevelScreen = function() {
  */
 JackpotGame.prototype.finishGame = function() {
   if(this.getClock('game').remaining == 0 && this.gameStatus == 'STARTED') {
-    var context     = this,
-        winnerData  = this.getWinnerData();
 
     this.gameStatus = 'FINISHED';
 
