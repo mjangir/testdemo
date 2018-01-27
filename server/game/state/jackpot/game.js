@@ -323,6 +323,7 @@ JackpotGame.prototype.finishGame = function() {
   if(this.getClock('game').remaining == 0 && this.gameStatus == 'STARTED') {
 
     this.gameStatus = 'FINISHED';
+    this.updateStatusInDB('FINISHED');
 
     updateHomeScreen(this, HOME_SCREEN_SCENE_WINNER);
 
