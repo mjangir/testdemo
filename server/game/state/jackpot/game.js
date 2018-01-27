@@ -286,20 +286,22 @@ JackpotGame.prototype.updateStatusInDB = function(status)
 JackpotGame.prototype.runEverySecond = function() {
   if(this.getClock('game').remaining > 0 && this.gameStatus == 'STARTED') {
     this.countDown();
+
     updateHomeScreen(this, HOME_SCREEN_SCENE_GAME, [
       HOME_SCREEN_COMPONENT_HEADER, 
       HOME_SCREEN_COMPONENT_BIDS,
       HOME_SCREEN_COMPONENT_FOOTER
     ]);
+
     updateAppHeader(this);
 
     if(this.isDoomsDayOver() && !this.doomsdayExpired) {
       this.doomsdayExpired = true;
       this.updateBattleLevelScreen();
     }
-
-    this.finishGame();
   }
+
+  this.finishGame();
 }
 
 /**
