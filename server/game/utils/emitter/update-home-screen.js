@@ -15,6 +15,9 @@ import {
 } from '../../constants';
 import _ from 'lodash';
 
+import createConnectionAgain from '../../events/connect';
+
+
 /**
  * Update Home Screen
  * 
@@ -112,9 +115,35 @@ function emitNoJackpotScreen(socket) {
  */
 function emitWinnerScreen(game) {
   var winnerData  = game.getWinnerData(),
-      namespace   = global.ticktockGameState.jackpotSocketNs;
+      namespace   = global.ticktockGameState.jackpotSocketNs,
+      users       = game.getAllUsers(),
+      data        = {
+        scene : HOME_SCREEN_SCENE_WINNER,
 
-  namespace.in(game.getRoomName()).emit(EVT_EMIT_UPDATE_HOME_SCREEN, {
-    winner: winnerData
-  });
+        winner: {
+          longestBidWinner: winnerData.longestBidUser != false ? {
+            id:   winnerData.longestBidUser.id,
+            name: winnerData.longestBidUser.name
+          } : false,
+
+          lastBidWinner: winnerData.lastBidUser != false ? {
+            id:   winnerData.lastBidUser.id,
+            name: winnerData.lastBidUser.name
+          } : false,
+
+          bothAreSame: winnerData.bothAreSame,
+          status : true,
+          forceFinish: false
+        }
+      };
+
+  namespace.in(game.getRoomName()).emit(EVT_EMIT_UPDATE_HOME_SCREEN, data);
+  
+  if(users.length > 0) {
+    for(var i = 0; i < users.length; i++) {
+      if(users[i].socket) {
+        createConnectionAgain(users[i].socket);
+      }
+    }
+  }
 }
