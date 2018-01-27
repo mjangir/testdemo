@@ -361,10 +361,10 @@ JackpotGame.prototype.getWinnerData = function() {
 JackpotGame.prototype.placeBid = function(userId, socket) {
   var user = this.getUserById(userId);
 
-  if(user && this.isUserBidConsecutive(user)) {
-    showErrorPopup(user.socket, CONSECUTIVE_BIDS_ERROR);
-    return false;
-  }
+  // if(user && this.isUserBidConsecutive(user)) {
+  //   showErrorPopup(user.socket, CONSECUTIVE_BIDS_ERROR);
+  //   return false;
+  // }
 
   return this.bidContainer.placeBid(userId, socket, function(bidContainer, parent, socket, bid) {
     if(user) {
