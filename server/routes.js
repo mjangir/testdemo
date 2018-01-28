@@ -11,6 +11,7 @@ export default function(app)
   app.use('/api/me', require('./api/me'));
   app.use('/api/privacy-policy', require('./api/privacy'));
   app.use('/api/faq', require('./api/faq'));
+  app.use('/api/terms-conditions', require('./api/terms'));
   app.use('/auth', require('./auth'));
 
   // Static contents route

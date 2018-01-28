@@ -402,6 +402,10 @@ function createDefaultSettings()
     value : 'No text yet'
   },
   {
+    key : 'terms_conditions',
+    value : 'No terms and conditions provided yet'
+  },
+  {
     key : 'faq_text',
     value : 'No FAQ Yet'
   }
