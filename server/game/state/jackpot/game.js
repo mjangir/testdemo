@@ -6,8 +6,9 @@ import updateHomeScreen from '../../utils/emitter/update-home-screen';
 import showErrorPopup from '../../utils/emitter/show-error-popup';
 import updateAppHeader from '../../utils/emitter/update-app-header';
 import updateLevelScreen from '../../utils/emitter/update-level-screen';
+import sqldb from '../../../sqldb';
 
-import { 
+import {
   HOME_SCREEN_SCENE_GAME,
   HOME_SCREEN_SCENE_WINNER,
 
@@ -19,9 +20,17 @@ import {
   CONSECUTIVE_BIDS_ERROR
 } from '../../constants';
 
+const UserModel                 = sqldb.User;
+const JackpotModel              = sqldb.Jackpot;
+const JackpotGameModel          = sqldb.JackpotGame;
+const JackpotGameUserModel      = sqldb.JackpotGameUser;
+const JackpotGameUserBidModel   = sqldb.JackpotGameUserBid;
+const JackpotGameWinnerModel    = sqldb.JackpotGameWinner;
+const UserWinningMoneyStatement = sqldb.UserWinningMoneyStatement;
+
 /**
  * Jackpot Game
- * 
+ *
  */
 function JackpotGame(parent) {
   Game.call(this);
@@ -35,7 +44,7 @@ JackpotGame.prototype = Object.create(Game.prototype);
 
 /**
  * Set Time Clocks
- * 
+ *
  * @returns {*}
  */
 JackpotGame.prototype.setTimeclocks = function() {
@@ -43,7 +52,7 @@ JackpotGame.prototype.setTimeclocks = function() {
 
   this.setClock('game', jackpot.gameDuration);
   this.setClock('doomsday', jackpot.doomsdayDuration);
-  
+
   if(jackpot.secondsToIncreaseAmount && jackpot.increaseAmount) {
       this.getClock('game').runEveryXSecond(jackpot.secondsToIncreaseAmount, this.updateJackpotAmount.bind(this));
   }
@@ -51,7 +60,7 @@ JackpotGame.prototype.setTimeclocks = function() {
 
 /**
  * Update Jackpot Amount
- * 
+ *
  * @returns {*}
  */
 JackpotGame.prototype.updateJackpotAmount = function() {
@@ -62,7 +71,7 @@ JackpotGame.prototype.updateJackpotAmount = function() {
 
 /**
  * Is Dooms Day Clock Over
- * 
+ *
  * @returns {Boolean}
  */
 JackpotGame.prototype.isDoomsDayOver = function()
@@ -72,7 +81,7 @@ JackpotGame.prototype.isDoomsDayOver = function()
 
 /**
  * Is Game Clock Over
- * 
+ *
  * @returns {Boolean}
  */
 JackpotGame.prototype.isGameClockOver = function()
@@ -82,7 +91,7 @@ JackpotGame.prototype.isGameClockOver = function()
 
 /**
  * Get All Users
- * 
+ *
  * @returns {Array}
  */
 JackpotGame.prototype.getAllUsers = function() {
@@ -91,8 +100,8 @@ JackpotGame.prototype.getAllUsers = function() {
 
 /**
  * Get User By ID
- * 
- * @param {JackpotUser} userId 
+ *
+ * @param {JackpotUser} userId
  */
 JackpotGame.prototype.getUserById = function(userId) {
   return _.find(this.users, {userId: String(userId)}) || false;
@@ -100,8 +109,8 @@ JackpotGame.prototype.getUserById = function(userId) {
 
 /**
  * Add User By ID
- * 
- * @param {JackpotUser} userId 
+ *
+ * @param {JackpotUser} userId
  */
 JackpotGame.prototype.addUserById = function(userId) {
   var user = new JackpotUser(this, userId);
@@ -111,8 +120,8 @@ JackpotGame.prototype.addUserById = function(userId) {
 
 /**
  * Is Bid Button Visible
- * 
- * @param {JackpotUser} user 
+ *
+ * @param {JackpotUser} user
  * @returns {Object}
  */
 JackpotGame.prototype.isBidButtonVisible = function(user) {
@@ -120,13 +129,13 @@ JackpotGame.prototype.isBidButtonVisible = function(user) {
       totalUsers          = this.getAllUsers().length,
       lastBidUserId       = this.bidContainer.getLastBidUserId(),
       userId              = user.userId;
-    
+
   return (totalUsers >= minPlayersRequired && lastBidUserId != userId);
 }
 
 /**
  * Is Quit Button Visible
- * 
+ *
  * @returns {Object}
  */
 JackpotGame.prototype.isQuitButtonVisible = function() {
@@ -135,7 +144,7 @@ JackpotGame.prototype.isQuitButtonVisible = function() {
 
 /**
  * Get Average Bid Bank
- * 
+ *
  * @returns {Number}
  */
 JackpotGame.prototype.getAverageBidBank = function() {
@@ -145,13 +154,13 @@ JackpotGame.prototype.getAverageBidBank = function() {
   for(var k in remaining) {
     bids += remaining[k].getJackpotAvailableBids();
   }
-  
+
   return bids != 0 && remaining.length != 0 ? Math.round(bids/remaining.length) : 0;
 }
 
 /**
  * Get Remaining Players
- * 
+ *
  * @returns {Array}
  */
 JackpotGame.prototype.getRemainingPlayers = function() {
@@ -171,7 +180,7 @@ JackpotGame.prototype.getRemainingPlayers = function() {
 
 /**
  * Get Active Players
- * 
+ *
  * @returns {Array}
  */
 JackpotGame.prototype.getActivePlayers = function() {
@@ -189,7 +198,7 @@ JackpotGame.prototype.getActivePlayers = function() {
 
 /**
  * Get Game Header Info
- * 
+ *
  * @returns {Object}
  */
 JackpotGame.prototype.getGameHeaderInfo = function() {
@@ -204,7 +213,7 @@ JackpotGame.prototype.getGameHeaderInfo = function() {
 
 /**
  * Get Bid Info
- * 
+ *
  * @returns {Object}
  */
 JackpotGame.prototype.getBidInfo = function() {
@@ -218,7 +227,7 @@ JackpotGame.prototype.getBidInfo = function() {
 
 /**
  * Get Players Info
- * 
+ *
  * @returns {Object}
  */
 JackpotGame.prototype.getPlayersInfo = function() {
@@ -231,8 +240,8 @@ JackpotGame.prototype.getPlayersInfo = function() {
 
 /**
  * Get User Info
- * 
- * @param {JackpotUser} user 
+ *
+ * @param {JackpotUser} user
  * @returns {Object}
  */
 JackpotGame.prototype.getUserInfo = function(user) {
@@ -246,8 +255,8 @@ JackpotGame.prototype.getUserInfo = function(user) {
 
 /**
  * Get Home Buttons Info
- * 
- * @param {JackpotUser} user 
+ *
+ * @param {JackpotUser} user
  * @returns {Object}
  */
 JackpotGame.prototype.getUserHomeButtonsInfo = function(user) {
@@ -259,7 +268,7 @@ JackpotGame.prototype.getUserHomeButtonsInfo = function(user) {
 
 /**
  * Start Game
- * 
+ *
  * @returns {*}
  */
 JackpotGame.prototype.startGame = function()
@@ -271,7 +280,7 @@ JackpotGame.prototype.startGame = function()
 
 /**
  * Update Status In Database
- * 
+ *
  * @param {String} status
  * @returns {*}
  */
@@ -288,7 +297,7 @@ JackpotGame.prototype.runEverySecond = function() {
     this.countDown();
 
     updateHomeScreen(this, HOME_SCREEN_SCENE_GAME, [
-      HOME_SCREEN_COMPONENT_HEADER, 
+      HOME_SCREEN_COMPONENT_HEADER,
       HOME_SCREEN_COMPONENT_BIDS,
       HOME_SCREEN_COMPONENT_FOOTER
     ]);
@@ -322,6 +331,8 @@ JackpotGame.prototype.updateBattleLevelScreen = function() {
 JackpotGame.prototype.finishGame = function() {
   if(this.getClock('game').remaining == 0 && this.gameStatus == 'STARTED') {
 
+    var context = this;
+
     this.gameStatus = 'FINISHED';
     this.updateStatusInDB('FINISHED');
 
@@ -329,9 +340,223 @@ JackpotGame.prototype.finishGame = function() {
 
     setTimeout(function()
     {
-        //context.saveDataInDB(winnerData);
+        var jackpotCore;
+
+        // Create Jackpot Core
+        jackpotCore = context.createJackpotCore();
+
+        // Create Jackpot Game Users
+        jackpotCore = this.createJackpotCoreUsers(jackpotCore);
+
+        // Create Jackpot Game Winners
+        jackpotCore = this.createJackpotCoreWinners(jackpotCore);
+
+        // Save The Data In Database
+        this.saveJackpotCoreInDatabase(jackpotCore, function()
+        {
+
+        });
     });
   }
+}
+
+/**
+ * Create Jackpot Core
+ *
+ * @return {Object}
+ */
+JackpotGame.prototype.createJackpotCore = function() {
+  var winnerData = this.getWinnerData();
+
+  var jackpotCore = {
+      jackpotId               : this.parent.id,
+      uniqueId                : this.parent.uniqueId,
+      totalUsersParticipated  : this.getAllUsers().length,
+      totalNumberOfBids       : this.bidContainer.getAllBids().length,
+      lastBidDuration         : this.bidContainer.getLastBidDuration(),
+      longestBidDuration      : this.bidContainer.getLongestBidDuration(),
+      longestBidWinnerUserId  : winnerData.longestBidUser ? winnerData.longestBidUser.id : null,
+      lastBidWinnerUserId     : winnerData.lastBidUser ? winnerData.lastBidUser.id : null,
+      startedOn               : this.startedOn ? moment(this.startedOn) : moment(new Date()),
+      finishedOn              : moment(new Date())
+    };
+
+    jackpotCore.startedOn   = jackpotCore.startedOn.format("YYYY-MM-DD HH:mm:ss");
+    jackpotCore.finishedOn  = jackpotCore.finishedOn.format("YYYY-MM-DD HH:mm:ss");
+
+  return jackpotCore;
+}
+
+/**
+ * Create Jackpot Core Users
+ *
+ * @param  {Object} jackpotCore
+ * @return {Object}
+ */
+JackpotGame.prototype.createJackpotCoreUsers = function(jackpotCore)
+{
+  jackpotCore.JackpotGameUsers = [];
+
+  var users = this.getAllUsers(),
+      user,
+      userBids,
+      userBid,
+      userBidsRefined = [],
+      userRelation;
+
+  if(users.length > 0)
+  {
+    for(var k in users)
+    {
+      user      = users[k],
+      userBids  = this.bidContainer.getAllBids(user.userId);
+
+      if(userBids.length > 0)
+      {
+        for(var j in userBids)
+        {
+          userBidsRefined.push({
+            bidStartTime: userBids[j].startTime,
+            bidEndTime:   userBids[j].endTime,
+            bidDuration:  userBids[j].duration
+          });
+        }
+      }
+
+      userRelation = {
+        remainingAvailableBids      : user.getJackpotAvailableBids(),
+        totalNumberOfBids           : userBids.length,
+        longestBidDuration          : this.bidContainer.getLongestBidDurationByUserId(user.userId),
+        joinedOn                    : userBids[0] ? userBids[0].startTime : null,
+        userId                      : user.userId,
+        JackpotGameUserBids         : userBidsRefined,
+        normalBattleWins            : user.getTotalNormalBattleWins(),
+        gamblingBattleWins          : user.getTotalAdvanceBattleWins(),
+        normalBattleLooses          : user.getTotalNormalBattleLooses(),
+        gamblingBattleLooses        : user.getTotalAdvanceBattleLooses(),
+        normalBattleLongestStreak   : user.getNormalBattleLongestStreak(),
+        gamblingBattleLongestStreak : user.getAdvanceBattleLongestStreak()
+      };
+
+      jackpotCore.JackpotGameUsers.push(userRelation);
+    }
+  }
+
+  return jackpotCore;
+}
+
+/**
+ * Create Jackpot Core Winners
+ *
+ * @param  {Object} jackpotCore
+ * @return {Object}
+ */
+JackpotGame.prototype.createJackpotCoreWinners = function(jackpotCore)
+{
+  var winnerData        = this.getWinnerData(),
+      jpWinners         = [],
+      settings          = global.ticktockGameState.settings,
+      lastBidPercent    = parseInt(settings['jackpot_setting_last_bid_percent_amount'], 10),
+      longestBidPercent = parseInt(settings['jackpot_setting_longest_bid_percent_amount'], 10);
+
+  if(winnerData.bothAreSame == true)
+  {
+    jpWinners.push({
+        isLastBidUser       : 1,
+        isLongestBidUser    : 1,
+        jackpotAmount       : this.parent.amount,
+        winningAmount       : this.parent.amount,
+        userId              : winnerData.lastBidUser.id
+    });
+  }
+  else
+  {
+    jpWinners.push({
+        isLastBidUser       : 1,
+        isLongestBidUser    : 0,
+        jackpotAmount       : this.parent.amount,
+        winningAmount       : parseFloat((this.parent.amount * lastBidPercent/100), 10).toFixed(2),
+        userId              : winnerData.lastBidUser.id
+    });
+    jpWinners.push({
+        isLastBidUser       : 0,
+        isLongestBidUser    : 1,
+        jackpotAmount       : this.parent.amount,
+        winningAmount       : parseFloat((this.parent.amount * longestBidPercent/100), 10).toFixed(2),
+        userId              : winnerData.longestBidUser.id
+    });
+  }
+  jackpotCore.JackpotGameWinners = jpWinners;
+
+  return jackpotCore;
+}
+
+/**
+ * Save Jackpot Core Data In Database
+ *
+ * @param  {Object}   jackpotCore
+ * @param  {Function} callback
+ * @return {*}
+ */
+JackpotGame.prototype.saveJackpotCoreInDatabase = function(jackpotCore, callback)
+{
+  var jpWinners = jackpotCore.JackpotGameWinners;
+
+  return JackpotGameModel.create(jackpotCore,
+  {
+    include: [
+    {
+        model   : JackpotGameUserModel,
+        as      : 'JackpotGameUsers',
+        include : [
+        {
+            model   : JackpotGameUserBidModel,
+            as      : 'JackpotGameUserBids'
+        }]
+    },
+    {
+        model   : JackpotGameWinnerModel,
+        as      : 'JackpotGameWinners'
+    }]
+  }).then(function(res)
+  {
+    // If everything went well, update the jackpot status to finished in main table
+    JackpotModel.find({
+      where: {
+          id: jackpotCore.jackpotId
+      }
+    })
+    .then(function(entity)
+    {
+      // Update winning money statement
+      if(jpWinners.length > 0)
+      {
+          for(var t in jpWinners)
+          {
+              UserWinningMoneyStatement.create({
+                  userId: jpWinners[t].userId,
+                  credit: jpWinners[t].winningAmount,
+                  relatedTo: 'JACKPOT'
+              });
+          }
+      }
+
+      entity.updateAttributes({gameStatus: 'FINISHED'})
+      .then(function(updated)
+      {
+          callback.call(global, null);
+      }).catch(function(err)
+      {
+          callback.call(global, err);
+      })
+    }).catch(function(err){
+
+    });
+  }).catch(function(err)
+  {
+      console.log(err);
+      callback.call(global, err);
+  });
 }
 
 /**
@@ -355,8 +580,8 @@ JackpotGame.prototype.getWinnerData = function() {
 
 /**
  * Place Bid By User ID
- * 
- * @param {String} userId 
+ *
+ * @param {String} userId
  */
 JackpotGame.prototype.placeBid = function(userId, socket) {
   var user = this.getUserById(userId);
@@ -379,7 +604,7 @@ JackpotGame.prototype.placeBid = function(userId, socket) {
 
 /**
  * Get Battle Levels List
- * 
+ *
  * @returns {JackpotUser}
  * @returns {Array}
  */
