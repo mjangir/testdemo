@@ -26,11 +26,11 @@ import createConnectionAgain from '../../events/connect';
  * @param {Array} components 
  * @returns {*}
  */
-export default function(game, scene, components, socket, battleLevel, battleGame) {
+export default function(game, scene, components, socket, battleLevel, battleGame, user) {
 
   switch (scene) {
     case HOME_SCREEN_SCENE_GAME:
-      emitGameScreen(game, components, battleLevel, battleGame);
+      emitGameScreen(game, components, battleLevel, battleGame, user);
     break;
 
     case HOME_SCREEN_SCENE_WINNER:
@@ -53,7 +53,7 @@ export default function(game, scene, components, socket, battleLevel, battleGame
  * @param {Array} components 
  * @returns {*}
  */
-function emitGameScreen(game, components, battleLevel, battleGame) {
+function emitGameScreen(game, components, battleLevel, battleGame, user) {
   var users,
       data  = {
         scene: HOME_SCREEN_SCENE_GAME
@@ -78,7 +78,20 @@ function emitGameScreen(game, components, battleLevel, battleGame) {
   }
 
   if((_.contains(components, HOME_SCREEN_COMPONENT_MY_INFO) || _.contains(components, HOME_SCREEN_COMPONENT_FOOTER)) || typeof components == 'undefined') {
-    if(users.length > 0) {
+
+    // One user provided
+    if(user) {
+      if(_.contains(components, HOME_SCREEN_COMPONENT_MY_INFO) || typeof components == 'undefined') {
+        data[HOME_SCREEN_COMPONENT_MY_INFO] = game.getUserInfo(user);
+      }
+
+      if(_.contains(components, HOME_SCREEN_COMPONENT_FOOTER) || typeof components == 'undefined') {
+        data[HOME_SCREEN_COMPONENT_FOOTER] = game.getUserHomeButtonsInfo(user);
+      }
+
+      user.socket.emit(EVT_EMIT_UPDATE_HOME_SCREEN, data);
+
+    } else if(users.length > 0) {
       for(var i in users) {
         var user = users[i];
   

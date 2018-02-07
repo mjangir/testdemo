@@ -265,4 +265,22 @@ BattleLevel.prototype.getSingleWinnerPrize = function()
   return this.getPrizeValue();
 }
 
+/**
+ * Get Previous Battle Level
+ */
+BattleLevel.prototype.getPreviousLevel = function()
+{
+  var order = parseInt(this.order, 10),
+      type  = this.battleType,
+      prev;
+
+  if(type == 'NORMAL') {
+    prev = this.jackpot.getNormalBattleLevelByOrder(Math.max(0, order - 1));
+  } else if(type == 'ADVANCE') {
+    prev = this.jackpot.getAdvanceBattleLevelByOrder(Math.max(0, order - 1));
+  }
+
+  return prev;
+}
+
 export default BattleLevel;

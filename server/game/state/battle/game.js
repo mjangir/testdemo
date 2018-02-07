@@ -20,7 +20,8 @@ import {
 
   HOME_SCREEN_SCENE_GAME,
   HOME_SCREEN_COMPONENT_MY_INFO,
-  HOME_SCREEN_COMPONENT_PLAYERS
+  HOME_SCREEN_COMPONENT_PLAYERS,
+  HOME_SCREEN_COMPONENT_FOOTER
 } from '../../constants';
 import _ from 'lodash';
 
@@ -337,9 +338,8 @@ BattleGame.prototype.runEverySecond = function() {
       BATTLE_SCREEN_COMPONENT_FOOTER
     ]);
 
-    if(this.jackpotGame.getClock('doomsday').remaining <= 0 && this.parent.battleType == 'NORMAL') {
-      this.finishGame(true);
-    } else if(this.jackpotGame.getClock('game').remaining <= 0 && this.parent.battleType == 'ADVANCE') {
+    if(this.jackpotGame.getClock('game').remaining <= 0 && 
+            (this.parent.battleType == 'ADVANCE' || this.parent.battleType == 'NORMAL')) {
       this.finishGame(true);
     } else {
       this.finishGame();
@@ -412,7 +412,8 @@ BattleGame.prototype.finishGame = function(forceFinish)
 
     updateBattleScreen(this, BATTLE_SCREEN_SCENE_WINNER, null, null, this.buildFinalFinishData(lastBidUser, longestBidUser, bothAreSame, forceFinish));
     updateHomeScreen(this.jackpotGame, HOME_SCREEN_SCENE_GAME, [
-      HOME_SCREEN_COMPONENT_MY_INFO
+      HOME_SCREEN_COMPONENT_MY_INFO,
+      HOME_SCREEN_COMPONENT_FOOTER
     ], null, this.parent, this);
   }
 

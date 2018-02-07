@@ -467,5 +467,23 @@ JackpotUser.prototype.getTotalBattleLooses = function() {
   return this.getTotalNormalBattleLooses() + this.getTotalAdvanceBattleLooses();
 }
 
+/**
+ * Get Wins To Unlock This Level
+ */
+JackpotUser.prototype.getWinsToUnlockBattleLevel = function(currentLevel) {
+  var previousLevel = currentLevel.getPreviousLevel(),
+      requiredWins  = 0,
+      alreadyWins   = 0,
+      remainingWins = 0;
+
+  if(previousLevel) {
+    requiredWins  = previousLevel.minWinsToUnlockNext || 0;
+    alreadyWins   = previousLevel.battleType == 'NORMAL' ? this.getTotalNormalBattleWins(previousLevel) : this.getTotalAdvanceBattleWins(previousLevel);
+    remainingWins = Math.max(0, requiredWins - alreadyWins);
+  }
+
+  return remainingWins;
+}
+
 
 export default JackpotUser;

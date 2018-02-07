@@ -13,6 +13,7 @@ import onDisconnect from './disconnect';
 import handlePostConnectJackpotEvents from './jackpot';
 import handlePostConnectBattleEvents from './battle';
 import updateHomeScreen from '../utils/emitter/update-home-screen';
+import updateLevelScreen from '../utils/emitter/update-level-screen';
 
 /**
  * Handle post connection events
@@ -48,7 +49,11 @@ export default function(socket)
     return joinUserToJackpotGame(data.game, socket, data.userId);
   }).then(function(data) {
     var game = data.game;
+    var user = data.user;
+
     updateHomeScreen(game, HOME_SCREEN_SCENE_GAME);
+    updateLevelScreen(game, user);
+    
   }).catch(function(status) {
     updateHomeScreen(false, HOME_SCREEN_SCENE_NO_JACKPOT, false, socket);
   });

@@ -395,7 +395,7 @@ function createDefaultSettings()
   },
   {
     key   : 'advance_battle_levels_json',
-    value : '[{"battle_type":"GAMBLING","level_name":"Advance Level 1","duration":"300", "min_bids_to_gamb": 10, "default_bids": 10, "last_bid_winner_percent": 50, "longest_bid_winner_percent": 50, "increment_seconds": 10, "min_players_to_start": 3, "min_wins_to_unlock_next": 0, "prize_type": "BID"}, {"battle_type":"GAMBLING","level_name":"Advance Level 2","duration":"300", "min_bids_to_gamb": 10, "default_bids": 10, "last_bid_winner_percent": 50, "longest_bid_winner_percent": 50, "increment_seconds": 10, "min_players_to_start": 3, "min_wins_to_unlock_next": 0, "prize_type": "BID"}]'
+    value : '[{"battle_type":"ADVANCE","level_name":"Advance Level 1","duration":"300", "min_bids_to_gamb": 10, "default_bids": 10, "last_bid_winner_percent": 50, "longest_bid_winner_percent": 50, "increment_seconds": 10, "min_players_to_start": 3, "min_wins_to_unlock_next": 0, "prize_type": "BID"}, {"battle_type":"ADVANCE","level_name":"Advance Level 2","duration":"300", "min_bids_to_gamb": 10, "default_bids": 10, "last_bid_winner_percent": 50, "longest_bid_winner_percent": 50, "increment_seconds": 10, "min_players_to_start": 3, "min_wins_to_unlock_next": 0, "prize_type": "BID"}]'
   },
   {
     key : 'privacy_text',

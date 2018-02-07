@@ -68,7 +68,7 @@ export const generateRandomString = function(length, chars)
 
 export const convertAmountToCommaString = function(amt)
 {
-  return Number(amt).toLocaleString();
+  return Number(amt).toFixed(2).toLocaleString();
 }
 
 export const findClientsSocket = function(roomId, namespace)

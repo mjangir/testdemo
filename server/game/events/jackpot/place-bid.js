@@ -1,6 +1,10 @@
 import isJackpotExist from '../../utils/is-jackpot-exist';
 import showErrorPopup from '../../utils/emitter/show-error-popup';
-import { MESSAGE_INVALID_INPUT_PROVIDED } from '../../constants';
+import { 
+  MESSAGE_INVALID_INPUT_PROVIDED, 
+  MESSAGE_NO_ENOUGH_BID_TO_PLACE,
+  HAVE_BEEN_ELIMINATED_PLEASE_JOIN_NEXT_JACKPOT_GAME
+} from '../../constants';
 
 /**
  * Handle Place Bid
@@ -25,7 +29,12 @@ function handlePlacebid(socket, data) {
   user 	  = game.getUserById(data.userId);
 
   if(user.getJackpotAvailableBids() <= 0) {
-    showErrorPopup(socket, MESSAGE_NO_ENOUGH_BID_TO_PLACE);
+
+    if(game.isDoomsDayOver()) {
+      showErrorPopup(socket, HAVE_BEEN_ELIMINATED_PLEASE_JOIN_NEXT_JACKPOT_GAME);
+    } else {
+      showErrorPopup(socket, MESSAGE_NO_ENOUGH_BID_TO_PLACE);
+    }
     return;
   }
 

@@ -372,7 +372,7 @@ JackpotGame.prototype.placeBid = function(userId, socket) {
       this.getClock('game').increaseBy(this.parent.increaseSecondsOnBid);
       updateHomeScreen(this, HOME_SCREEN_SCENE_GAME, [
         HOME_SCREEN_COMPONENT_MY_INFO
-      ]);
+      ], null, null, null, user);
     }
   }.bind(this));
 }
