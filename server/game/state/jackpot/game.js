@@ -347,13 +347,13 @@ JackpotGame.prototype.finishGame = function() {
         jackpotCore = context.createJackpotCore();
 
         // Create Jackpot Game Users
-        jackpotCore = this.createJackpotCoreUsers(jackpotCore);
+        jackpotCore = context.createJackpotCoreUsers(jackpotCore);
 
         // Create Jackpot Game Winners
-        jackpotCore = this.createJackpotCoreWinners(jackpotCore);
+        jackpotCore = context.createJackpotCoreWinners(jackpotCore);
 
         // Save The Data In Database
-        this.saveJackpotCoreInDatabase(jackpotCore, function()
+        context.saveJackpotCoreInDatabase(jackpotCore, function()
         {
 
         });
