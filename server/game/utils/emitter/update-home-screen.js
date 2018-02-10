@@ -59,7 +59,7 @@ function emitGameScreen(game, components, battleLevel, battleGame, user) {
         scene: HOME_SCREEN_SCENE_GAME
       };
 
-  if(typeof battleGame != 'undefined') {
+  if(battleGame) {
     users = battleGame.getAllUsers();
   } else {
     users = game.getAllUsers();
