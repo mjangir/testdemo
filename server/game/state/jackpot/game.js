@@ -595,9 +595,9 @@ JackpotGame.prototype.placeBid = function(userId, socket) {
     if(user) {
       user.afterPlacedBid(bidContainer, parent, socket, bid);
       this.getClock('game').increaseBy(this.parent.increaseSecondsOnBid);
-      updateHomeScreen(this, HOME_SCREEN_SCENE_GAME, [
-        HOME_SCREEN_COMPONENT_MY_INFO
-      ], null, null, null, user);
+      // updateHomeScreen(this, HOME_SCREEN_SCENE_GAME, [
+      //   HOME_SCREEN_COMPONENT_MY_INFO
+      // ], null, null, null, user);
     }
   }.bind(this));
 }
