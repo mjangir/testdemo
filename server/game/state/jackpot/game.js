@@ -628,6 +628,7 @@ JackpotGame.prototype.getBattleLevelList = function(user) {
         playersCount            : normal[i].getPlayersCount(),
         activePlayersCount      : normal[i].getActivePlayersCount(),
         winsToUnlockNextLevel   : normal[i].getWinsToUnlockNextLevel(user),
+        nextLevelName           : jackpot.getNormalBattleLevelByOrder(normal[i].order + 1) ? jackpot.getNormalBattleLevelByOrder(normal[i].order + 1).title : ""
       });
     }
   }
