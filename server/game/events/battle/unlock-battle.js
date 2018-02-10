@@ -40,7 +40,7 @@ function handleUnlockBattle(socket, data)
       showErrorPopup(socket, MESSAGE_INVALID_INPUT_PROVIDED);
       return;
     }
-    
+    console.log(battleLevel.battleType, battleLevel.isUserAbleToJoin(user));
     // Check user is eligible to join the battle level
     if(battleLevel.battleType == 'NORMAL' && !battleLevel.isUserAbleToJoin(user)) {
 
