@@ -50,7 +50,7 @@ function handleUnlockBattle(socket, data)
 
       if(previousLevel) {
         console.log("second");
-        previousLevelName = previousLevel.title();
+        previousLevelName = previousLevel.title;
 
         if(!previousLevel.isUserAbleToJoin(user)) {
           console.log("third");
