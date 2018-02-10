@@ -40,23 +40,18 @@ function handleUnlockBattle(socket, data)
       showErrorPopup(socket, MESSAGE_INVALID_INPUT_PROVIDED);
       return;
     }
-    console.log(battleLevel.battleType, battleLevel.isUserAbleToJoin(user));
+    
     // Check user is eligible to join the battle level
-    if(battleLevel.battleType == 'NORMAL' && !battleLevel.isUserAbleToJoin(user)) {
-
-      console.log("first");
+    if(battleLevel.battleType == 'NORMAL' && !battleLevel.isUserAbleToJoin(user, true)) {
 
       previousLevel = battleLevel.getPreviousLevel();
 
       if(previousLevel) {
-        console.log("second");
         previousLevelName = previousLevel.title;
 
-        if(!previousLevel.isUserAbleToJoin(user)) {
-          console.log("third");
+        if(!previousLevel.isUserAbleToJoin(user, true)) {
           winsToUnlockMessage = IN_APP_PURCHASE_CANNOT_SKIP_PREVIOUS_LEVELS_TO_UNLOCK.replace('{previousLevelName}', previousLevelName);
         } else {
-          console.log("forth");
           winsToUnlockThis    = user.getWinsToUnlockBattleLevel(battleLevel);
           currentLevelName    = battleLevel.title;
           winsToUnlockMessage = IN_APP_PURCHASE_SHOW_WINS_TO_UNLOCK_THIS_LEVEL.replace('{winsRequired}', winsToUnlockThis).replace('{previouLevelName}', previousLevelName).replace('{currentLevelName}', currentLevelName);
@@ -65,12 +60,10 @@ function handleUnlockBattle(socket, data)
         showErrorPopup(socket, winsToUnlockMessage);
         return;
       } else {
-        console.log("fifth");
         showErrorPopup(socket, THIS_LEVEL_IS_ALREADY_UNLOCKED);
         return;
       }
     }
-    console.log("sixth");
 }
 
 export default function(socket)

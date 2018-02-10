@@ -185,11 +185,11 @@ BattleLevel.prototype.getAvailableGameSlot = function() {
  * @param {JackpotUser} user 
  * @returns {Boolean}
  */
-BattleLevel.prototype.isUserAbleToJoin = function(user) {
+BattleLevel.prototype.isUserAbleToJoin = function(user, toUnlock) {
   if(this.battleType == 'NORMAL') {
-    return this.isUserAbleToJoinNormalBattle(user);
+    return this.isUserAbleToJoinNormalBattle(user, toUnlock);
   } else if(this.battleType == 'ADVANCE') {
-    return this.isUserAbleToJoinAdvanceBattle(user);
+    return this.isUserAbleToJoinAdvanceBattle(user, toUnlock);
   }
 }
 
@@ -199,12 +199,12 @@ BattleLevel.prototype.isUserAbleToJoin = function(user) {
  * @param {JackpotUser} user 
  * @returns {Boolean}
  */
-BattleLevel.prototype.isUserAbleToJoinNormalBattle = function(user) {
+BattleLevel.prototype.isUserAbleToJoinNormalBattle = function(user, toUnlock) {
   var jackpot 	= this.jackpot,
       order 		= this.order,
       prevOrder = Math.max(1, order - 1);
 
-	if(prevOrder == 1) {
+	if(prevOrder == 1 && typeof toUnlock == 'undefined') {
 		return true;
 	} else {
 		var previousLevel 	= jackpot.getNormalBattleLevelByOrder(prevOrder),
