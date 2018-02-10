@@ -7,6 +7,7 @@ import showErrorPopup from '../../utils/emitter/show-error-popup';
 import updateAppHeader from '../../utils/emitter/update-app-header';
 import updateLevelScreen from '../../utils/emitter/update-level-screen';
 import sqldb from '../../../sqldb';
+import moment from 'moment';
 
 import {
   HOME_SCREEN_SCENE_GAME,
