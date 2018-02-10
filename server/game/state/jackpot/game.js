@@ -306,7 +306,7 @@ JackpotGame.prototype.runEverySecond = function() {
 
     if(this.isDoomsDayOver() && !this.doomsdayExpired) {
       this.doomsdayExpired = true;
-      //this.updateBattleLevelScreen();
+      this.updateBattleLevelScreen();
     }
   }
 
