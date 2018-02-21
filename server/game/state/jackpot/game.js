@@ -39,6 +39,7 @@ function JackpotGame(parent) {
   this.users            = [];
   this.doomsdayExpired  = false;
   this.gameStatus       = this.parent.gameStatus;
+  console.log("game status", this.gameStatus);
   this.setTimeclocks();
 }
 
