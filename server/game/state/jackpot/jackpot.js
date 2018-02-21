@@ -30,6 +30,7 @@ function Jackpot(data) {
   this.increaseAmount           = data.increaseAmount;
   this.users                    = [];
   this.battleLevels             = [];
+  this.gameStatus               = data.gameStatus;
   this.game                     = new JackpotGame(this);
 
   this.addBattleLevels(data);
