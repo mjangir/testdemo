@@ -9,7 +9,6 @@ import _ from 'lodash';
  * @returns {*}
  */
 function Game() {
-	this.gameStatus = 'NOT_STARTED';
   this.uniqueId   = generateRandomString(20, 'aA');
 
   // Set Initial

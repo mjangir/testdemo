@@ -36,6 +36,7 @@ function BattleGame(parent) {
   this.jackpot      = parent.jackpot;
   this.jackpotGame  = this.jackpot.game;
   this.users        = [];
+  this.gameStatus   = 'NOT_STARTED';
   this.setTimeclocks();
 }
 
