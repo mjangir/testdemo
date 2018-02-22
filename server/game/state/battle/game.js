@@ -363,6 +363,7 @@ BattleGame.prototype.placeBid = function(userId, socket) {
 
   return this.bidContainer.placeBid(userId, socket, function(bidContainer, parent, socket, bid) {
     if(user) {
+      game.startGame();
       user.afterPlacedBid(bidContainer, parent, socket, bid);
       this.getClock('game').increaseBy(this.parent.increaseSecondsOnBid);
       updateBattleScreen(this, BATTLE_SCREEN_SCENE_GAME, [
