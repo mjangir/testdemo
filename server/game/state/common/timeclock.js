@@ -6,10 +6,11 @@ import { convertSecondsToCounterTime } from '../../../utils/functions';
  * @param {any} data 
  */
 function Timeclock(data) {
-    this.clockName  = data.clockName;
-    this.duration   = data.duration;
-    this.remaining  = data.duration;
-    this.elapsed    = 0;
+    this.clockName      = data.clockName;
+    this.duration       = data.duration;
+    this.remaining      = data.duration;
+    this.remainingOnce  = data.duration;
+    this.elapsed        = 0;
 
     this.everyXSecondsCallbacks = [];
 }
@@ -50,8 +51,9 @@ Timeclock.prototype.increaseBy = function(second) {
  */
 Timeclock.prototype.countDown = function() {
     if(this.remaining > 0) {
-        this.remaining -= 1;
-        this.elapsed   = this.duration - this.remaining;
+        this.remaining      -= 1;
+        this.remainingOnce  -= 1;
+        this.elapsed        = this.duration - this.remainingOnce;
     }
 
     this.callEveryXSecondCallbacks();
@@ -71,7 +73,7 @@ Timeclock.prototype.callEveryXSecondCallbacks = function() {
 
             if(cbItem.lastCalled + cbItem.second == this.elapsed) {
                 cbItem.lastCalled = this.elapsed;
-                cbItem.callback.call(this, this.elapsed, this.remaining);
+                cbItem.callback.call(this, this.elapsed, this.remainingOnce);
             }
         }
     }

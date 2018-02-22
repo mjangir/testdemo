@@ -67,7 +67,6 @@ JackpotGame.prototype.setTimeclocks = function() {
  */
 JackpotGame.prototype.updateJackpotAmount = function(elapsed, remaining) {
   var jackpot = this.parent;
-console.log(elapsed, remaining);
   jackpot.amount = Number(parseFloat(jackpot.amount, 10) + parseFloat(jackpot.increaseAmount, 10)).toFixed(2);
 }
 
