@@ -69,6 +69,7 @@ JackpotGame.prototype.updateJackpotAmount = function() {
   var jackpot = this.parent;
 
   jackpot.amount = Number(parseFloat(jackpot.amount, 10) + parseFloat(jackpot.increaseAmount, 10)).toFixed(2);
+  console.log("jackpot.amount",jackpot.amount);
 }
 
 /**
@@ -248,7 +249,7 @@ JackpotGame.prototype.getPlayersInfo = function() {
  */
 JackpotGame.prototype.getUserInfo = function(user) {
   return {
-    bidBank       : user.getJackpotAvailableBids(),
+    bidBank       : user.getJackpotAvailableBids() || 0,
     myLongestBid  : this.bidContainer.getLongestBidDurationByUserId(user.userId, true),
     battlesWon    : user.getTotalBattleWins(),
     battleStreak  : user.getCurrentBattleStreak()
