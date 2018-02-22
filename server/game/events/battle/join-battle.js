@@ -55,6 +55,7 @@ function handleJoinBattle(socket, data)
     getUserBidBattleGame(battleLevel, user).then(function(data) {
       joinUserToBidBattleGame(data.level, data.user, data.game, socket, function(level, user, game, socket) {
         updateBattleScreen(game, BATTLE_SCREEN_SCENE_GAME);
+        game.startGame();
       });
     });
 }
