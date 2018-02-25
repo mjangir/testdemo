@@ -190,7 +190,7 @@ const create = function(req, res)
 {
   logger.debug("Create user initializated");
 
-  req.body.username = req.body.email.match(/^([^@]*)@/) ? req.body.email.match(/^([^@]*)@/)[1] : "";
+  req.body.username = req.body.email.match(/^([^@]*)@/) ? req.body.email.match(/^([^@]*)@/)[1] + Math.floor(Math.random() * 100000) : "";
 
   let newUser = User.build(req.body);
 
