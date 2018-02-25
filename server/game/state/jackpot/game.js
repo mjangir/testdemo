@@ -428,6 +428,7 @@ JackpotGame.prototype.createJackpotCoreUsers = function(jackpotCore)
         remainingAvailableBids      : user.getJackpotAvailableBids(),
         totalNumberOfBids           : userBids.length,
         longestBidDuration          : this.bidContainer.getLongestBidDurationByUserId(user.userId),
+        lastBidDuration             : this.bidContainer.getLastBidDurationByUserId(user.userId),
         joinedOn                    : userBids[0] ? userBids[0].startTime : null,
         userId                      : user.userId,
         JackpotGameUserBids         : userBidsRefined,

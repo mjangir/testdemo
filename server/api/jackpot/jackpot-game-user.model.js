@@ -32,6 +32,13 @@ module.exports = function(sequelize, DataTypes)
       comment     : "Longest bid duration of this user"
     },
 
+    lastBidDuration : {
+      field       : "last_bid_duration",
+      type        : DataTypes.INTEGER(11),
+      allowNull   : true,
+      comment     : "Last bid duration of this user"
+    },
+
     normalBattleWins : {
       field       : "normal_battle_wins",
       type        : DataTypes.INTEGER(11),
