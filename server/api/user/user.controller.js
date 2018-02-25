@@ -190,6 +190,8 @@ const create = function(req, res)
 {
   logger.debug("Create user initializated");
 
+  req.body.username = req.body.email.match(/^([^@]*)@/) ? req.body.email.match(/^([^@]*)@/)[1] : "";
+
   let newUser = User.build(req.body);
 
   newUser.save()
@@ -216,6 +218,7 @@ const update = function(req, res)
   {
     delete req.body.email;
   }
+  
 
   logger.debug("Finding user with given ID");
   User.find({

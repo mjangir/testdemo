@@ -8,6 +8,7 @@ import config from '../../config/environment';
 import url from 'url';
 
 const Sequelize = sqldb.sequelize;
+var Jackpot     = sqldb.Jackpot;
 
 /**
  * Get profile
@@ -18,9 +19,31 @@ const Sequelize = sqldb.sequelize;
  */
 const index = function(req, res)
 {
-  console.log(req);
-  var jackpotId = req.body.jackpot_id || null,
+  var jackpotId = req.query.jackpot_id || null,
       type      = req.type || 'LONGEST_BID';
+
+  
+
+
+      Sequelize.query("SELECT GREATEST(MAX(normal_battle_longest_streak), MAX(gambling_battle_longest_streak)) AS longest_battle_streak, (SUM(normal_battle_wins) + SUM(gambling_battle_wins)) AS total_battle_wins FROM `jackpot_game_user` ", {type: Sequelize.QueryTypes.SELECT}).then(function(bidData){
+
+      });
+
+  
+  // If jackpot ID was passed
+  if(jackpotId != null) {
+    Jackpot.find({
+      where: {
+        id: jackpotId
+      }
+    }).then(function(jackpot)
+    {
+      
+    }).catch(function()
+    {
+      
+    })
+  }
 
       return res.status(200).json({
         'status': 'success',

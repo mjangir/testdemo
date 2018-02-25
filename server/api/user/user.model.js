@@ -19,6 +19,34 @@ module.exports = function(sequelize, DataTypes)
       comment         : "Primary and auto increment key of the table"
     },
 
+    username : {
+      field       : "username",
+      type        : DataTypes.STRING(50),
+      allowNull   : true,
+      comment     : "Name of user",
+      validate    : {
+        isUnique: function (value, next)
+        {
+          const self = this;
+
+          User.find({where: {username: value}})
+            .then(function(user)
+            {
+              if(user && self.id !== user.id)
+              {
+                return next('Username is already in use');
+              }
+
+              return next();
+          })
+          .catch(function(err)
+          {
+              return next(err);
+          });
+        }
+      }
+    },
+
     name : {
       field       : "name",
       type        : DataTypes.STRING(30),
