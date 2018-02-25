@@ -18,7 +18,7 @@ const Sequelize = sqldb.sequelize;
  */
 const index = function(req, res)
 {
-  var jackpotId = req.jackpot_id || null,
+  var jackpotId = req.body.jackpot_id || null,
       type      = req.type || 'LONGEST_BID';
 
       return res.status(200).json({
