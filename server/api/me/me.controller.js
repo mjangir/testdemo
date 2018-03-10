@@ -12,7 +12,7 @@ let User = sqldb.User;
 
 const defaultAvatarUrl     = url.format({
     protocol:   config.protocol,
-    hostname:   config.ip,
+    hostname:   '18.221.196.29',
     port:       config.port,
     pathname:   'images/avatar.jpg',
 });
@@ -50,7 +50,7 @@ const index = function(req, res)
     {
       user.photo = url.format({
           protocol:   config.protocol,
-          hostname:   config.ip,
+          hostname:   '18.221.196.29',
           port:       config.port,
           pathname:   'uploads/' + user.photo,
       });
@@ -155,7 +155,7 @@ const avatar = function(req, res)
               'message': 'Profile picture updated successfully',
               'image': url.format({
                   protocol:   config.protocol,
-                  hostname:   config.ip,
+                  hostname:   '18.221.196.29',
                   port:       config.port,
                   pathname:   'uploads/' + image
               })
