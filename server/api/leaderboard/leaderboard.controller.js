@@ -74,7 +74,9 @@ const index = function(req, res)
   mainQuery = mainQuery.replace('{SUBQUERY}', subQuery);
   mainQuery = mainQuery.replace('{ORDER_BY}', orderBy);
 
-  console.log(mainQuery);
+  Sequelize.query(mainQuery, {type: Sequelize.QueryTypes.SELECT}).then(function(result){
+    console.log(result);
+  });
 
 };
 
