@@ -20,7 +20,7 @@ var Jackpot     = sqldb.Jackpot;
 const index = function(req, res)
 {
   var jackpotId = req.query.jackpot_id || null,
-      type      = req.type || 'LONGEST_BID',
+      type      = req.query.type || 'LONGEST_BID',
       subQuery  = "",
       orderBy   = "";
 
