@@ -20,66 +20,62 @@ var Jackpot     = sqldb.Jackpot;
 const index = function(req, res)
 {
   var jackpotId = req.query.jackpot_id || null,
-      type      = req.type || 'LONGEST_BID';
+      type      = req.type || 'LONGEST_BID',
+      subQuery  = "",
+      orderBy   = "";
 
-  
-
-
-      Sequelize.query("SELECT GREATEST(MAX(normal_battle_longest_streak), MAX(gambling_battle_longest_streak)) AS longest_battle_streak, (SUM(normal_battle_wins) + SUM(gambling_battle_wins)) AS total_battle_wins FROM `jackpot_game_user` ", {type: Sequelize.QueryTypes.SELECT}).then(function(bidData){
-
-      });
-
-  
-  // If jackpot ID was passed
-  if(jackpotId != null) {
-    Jackpot.find({
-      where: {
-        id: jackpotId
-      }
-    }).then(function(jackpot)
-    {
+      var mainQuery="";
       
-    }).catch(function()
-    {
+      var mainQuery="";
+          mainQuery += "SELECT u.id                                                                  AS ";
+          mainQuery += "       user_id ";
+          mainQuery += "       , ";
+          mainQuery += "       u.username, ";
+          mainQuery += "       u.photo, ";
+          mainQuery += "       jgu.longest_bid_duration, ";
+          mainQuery += "       jgu.last_bid_duration, ";
+          mainQuery += "       ( `jgu`.`normal_battle_wins` ";
+          mainQuery += "         + `jgu`.`gambling_battle_wins` )                                    AS ";
+          mainQuery += "       total_wins, ";
+          mainQuery += "       IF(jgu.normal_battle_longest_streak > jgu.gambling_battle_longest_streak, ";
+          mainQuery += "       jgu.normal_battle_longest_streak, jgu.gambling_battle_longest_streak) AS ";
+          mainQuery += "       longest_streak ";
+          mainQuery += "FROM   `jackpot_game_user` AS `jgu` ";
+          mainQuery += "       LEFT JOIN `user` AS u ";
+          mainQuery += "              ON u.id = jgu.user_id ";
+          mainQuery += "WHERE  jgu.jackpot_game_id IN ({SUBQUERY})";
+          mainQuery += "ORDER  BY {ORDER_BY} DESC ";
+
       
-    })
+  if(jackpotId) {
+    subQuery = "SELECT id FROM   `jackpot_game` WHERE  jackpot_id = "+jackpotId+" ORDER  BY `finished_on` DESC LIMIT  1";
+  } else {
+    subQuery = "SELECT max(id) as id FROM jackpot_game group by jackpot_id ORDER BY id DESC";
   }
 
-      return res.status(200).json({
-        'status': 'success',
-        'data': {
-          jackpotId: jackpotId,
-          type: type
-        }
-      });
+  switch (type) {
+    case 'LONGEST_BID':
+      orderBy = 'jgu.longest_bid_duration';
+    break;
+    case 'LAST_BID':
+      orderBy = 'jgu.last_bid_duration';
+    break;
+    case 'TOTAL_WINS':
+      orderBy = 'total_wins';
+    break;
+    case 'LONGEST_STREAK':
+      orderBy = 'longest_streak';
+    break;
+    default:
+      orderBy = 'total_wins';
+    break;
+  } 
 
-  
-    // Sequelize.query("SELECT SUM(credit) AS total_credit, SUM(debit) AS total_debit, SUM(credit) - SUM(debit) AS balance FROM `user_winning_money_statement` WHERE user_id =" + req.user.user_id, {type: Sequelize.QueryTypes.SELECT}).then(function(row)
-    // {
-    //     var walletData =  row[0];
+  mainQuery = mainQuery.replace('{SUBQUERY}', subQuery);
+  mainQuery = mainQuery.replace('{ORDER_BY}', orderBy);
 
-    //     user.careerEarning  = walletData.total_credit;
-    //     user.totalDebit     = walletData.total_debit;
-    //     user.walletBalance  = walletData.balance;
+  console.log(mainQuery);
 
-    //     Sequelize.query("SELECT SUM(CASE WHEN is_longest_bid_user=1 THEN 1 ELSE 0 END) AS total_longest_bids,SUM(CASE WHEN is_last_bid_user=1 THEN 1 ELSE 0 END) AS total_last_bids FROM jackpot_game_winner where user_id ="+req.user.user_id, {type: Sequelize.QueryTypes.SELECT}).then(function(bidRes)
-    //     {
-    //       var bidResult           = bidRes[0];
-    //       user.totalLongestBids   = bidResult.total_longest_bids;
-    //       user.totalLastBids      = bidResult.total_last_bids;
-
-    //       Sequelize.query("SELECT GREATEST(MAX(normal_battle_longest_streak), MAX(gambling_battle_longest_streak)) AS longest_battle_streak, (SUM(normal_battle_wins) + SUM(gambling_battle_wins)) AS total_battle_wins FROM `jackpot_game_user` WHERE user_id="+req.user.user_id, {type: Sequelize.QueryTypes.SELECT}).then(function(bidData){
-    //         var battleBidData = bidData[0];
-    //         user.longestBattleStreak    = battleBidData.longest_battle_streak;
-    //         user.totalBattleWins        = battleBidData.total_battle_wins;
-
-    //         return res.status(200).json({
-    //           'status': 'success',
-    //           'data': user
-    //         });
-    //       });
-    //     });
-    // }).catch(sequelizeErrorHandler(res));
 };
 
 export default {
