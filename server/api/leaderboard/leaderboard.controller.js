@@ -75,7 +75,16 @@ const index = function(req, res)
   mainQuery = mainQuery.replace('{ORDER_BY}', orderBy);
 
   Sequelize.query(mainQuery, {type: Sequelize.QueryTypes.SELECT}).then(function(result){
-    console.log(result);
+    return res.status(200).json({
+      'status': 'success',
+      'data': result
+    });
+  }).catch(function()
+  {
+    return res.status(500).json({
+      'status': 'error',
+      'data': 'Error occured while processing'
+    });
   });
 
 };
