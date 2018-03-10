@@ -36,7 +36,7 @@ function isAuthenticated() {
 
       logger.debug('API ACCESS :: Call express jwt validator function....');
 
-      validateJwt(req, res, next);
+      return validateJwt(req, res, next);
     })
     // Attach user to request
     .use(function(err, req, res, next)
