@@ -11,8 +11,8 @@ import url from 'url';
 let User = sqldb.User;
 
 const defaultAvatarUrl     = url.format({
-    protocol:   config.protocol,
-    hostname:   '18.221.196.29',
+    protocol:   '18.221.196.29',
+    hostname:   config.ip,
     port:       config.port,
     pathname:   'images/avatar.jpg',
 });
@@ -49,8 +49,8 @@ const index = function(req, res)
     else
     {
       user.photo = url.format({
-          protocol:   config.protocol,
-          hostname:   '18.221.196.29',
+          protocol:   '18.221.196.29',
+          hostname:   config.ip,
           port:       config.port,
           pathname:   'uploads/' + user.photo,
       });
@@ -154,8 +154,8 @@ const avatar = function(req, res)
               'status': 'success',
               'message': 'Profile picture updated successfully',
               'image': url.format({
-                  protocol:   config.protocol,
-                  hostname:   '18.221.196.29',
+                  protocol:   '18.221.196.29',
+                  hostname:   config.ip,
                   port:       config.port,
                   pathname:   'uploads/' + image
               })
