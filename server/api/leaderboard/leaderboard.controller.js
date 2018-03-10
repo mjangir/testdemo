@@ -43,14 +43,14 @@ const index = function(req, res)
           mainQuery += "FROM   `jackpot_game_user` AS `jgu` ";
           mainQuery += "       LEFT JOIN `user` AS u ";
           mainQuery += "              ON u.id = jgu.user_id ";
-          mainQuery += "WHERE  jgu.jackpot_game_id IN ({SUBQUERY})";
+          mainQuery += "WHERE  jgu.jackpot_game_id {SUBQUERY}";
           mainQuery += "ORDER  BY {ORDER_BY} DESC ";
 
       
   if(jackpotId) {
-    subQuery = "SELECT id FROM   `jackpot_game` WHERE  jackpot_id = "+jackpotId+" ORDER  BY `finished_on` DESC LIMIT  1";
+    subQuery = "= (SELECT id FROM   `jackpot_game` WHERE  jackpot_id = "+jackpotId+" ORDER  BY `finished_on` DESC LIMIT  1)";
   } else {
-    subQuery = "SELECT max(id) as id FROM jackpot_game group by jackpot_id ORDER BY id DESC";
+    subQuery = "IN (SELECT max(id) as id FROM jackpot_game group by jackpot_id ORDER BY id DESC)";
   }
 
   switch (type) {
