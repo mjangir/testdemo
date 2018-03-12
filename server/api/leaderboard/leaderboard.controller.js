@@ -89,8 +89,8 @@ const index = function(req, res)
           user_id:              record.user_id || 0,
           username:             record.username || "",
           photo:                record.username || defaultAvatarUrl,
-          longest_bid_duration: record.longest_bid_duration ? convertSecondsToCounterTime(record.longest_bid_duration) : 0,
-          last_bid_duration:    record.last_bid_duration ? convertSecondsToCounterTime(record.last_bid_duration) : 0,
+          longest_bid_duration: record.longest_bid_duration ? getHumanDuration(record.longest_bid_duration) : 0,
+          last_bid_duration:    record.last_bid_duration ? getHumanDuration(record.last_bid_duration) : 0,
           total_wins:           record.total_wins ? record.total_wins : 0,
           longest_streak:       record.longest_streak ? longest_streak.total_wins : 0,
           rank:                 ++rank,
@@ -114,10 +114,10 @@ const index = function(req, res)
 const getLeaderboardScore = function(record, type) {
   switch (type) {
     case 'LONGEST_BID':
-      return record.longest_bid_duration ? convertSecondsToCounterTime(record.longest_bid_duration) : 0;
+      return record.longest_bid_duration ? getHumanDuration(record.longest_bid_duration) : 0;
     break;
     case 'LAST_BID':
-    return record.last_bid_duration ? convertSecondsToCounterTime(record.last_bid_duration) : 0;
+    return record.last_bid_duration ? getHumanDuration(record.last_bid_duration) : 0;
     break;
     case 'TOTAL_WINS':
       return record.total_wins || 0;
@@ -129,6 +129,11 @@ const getLeaderboardScore = function(record, type) {
       return record.total_wins || 0;
     break;
   } 
+}
+
+const getHumanDuration = function(seconds) {
+  var t = convertSecondsToCounterTime(seconds);
+  return t.hours + ':' + t.minutes + ':' + t.seconds;
 }
 
 export default {
