@@ -88,7 +88,7 @@ const index = function(req, res)
       return {
           user_id:              record.user_id || 0,
           username:             record.username || "",
-          photo:                record.username || defaultAvatarUrl,
+          photo:                record.photo || defaultAvatarUrl,
           longest_bid_duration: record.longest_bid_duration ? getHumanDuration(record.longest_bid_duration) : 0,
           last_bid_duration:    record.last_bid_duration ? getHumanDuration(record.last_bid_duration) : 0,
           total_wins:           record.total_wins ? record.total_wins : 0,
