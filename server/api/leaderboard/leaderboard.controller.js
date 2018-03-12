@@ -6,9 +6,17 @@ import {sequelizeErrorHandler} from '../../utils/LiveErrorHandler';
 import * as constants from '../../config/constants';
 import config from '../../config/environment';
 import url from 'url';
+import { convertSecondsToCounterTime } from '../../utils/functions';
 
 const Sequelize = sqldb.sequelize;
 var Jackpot     = sqldb.Jackpot;
+
+const defaultAvatarUrl     = url.format({
+  protocol:   config.protocol,
+  hostname:   '18.221.196.29',
+  port:       config.port,
+  pathname:   'images/avatar.jpg',
+});
 
 /**
  * Get profile
@@ -75,6 +83,20 @@ const index = function(req, res)
   mainQuery = mainQuery.replace('{ORDER_BY}', orderBy);
 
   Sequelize.query(mainQuery, {type: Sequelize.QueryTypes.SELECT}).then(function(result){
+    var rank = 1;
+    result = result.map(function(record) {
+      return {
+          user_id:              record.user_id || 0,
+          username:             record.username || "",
+          photo:                record.username || defaultAvatarUrl,
+          longest_bid_duration: record.longest_bid_duration ? convertSecondsToCounterTime(record.longest_bid_duration) : 0,
+          last_bid_duration:    record.last_bid_duration ? convertSecondsToCounterTime(record.last_bid_duration) : 0,
+          total_wins:           record.total_wins ? record.total_wins : 0,
+          longest_streak:       record.longest_streak ? longest_streak.total_wins : 0,
+          rank:                 ++rank,
+          score:                getLeaderboardScore(record, type)
+      };
+    });
     return res.status(200).json({
       'status': 'success',
       'data': result
@@ -88,6 +110,26 @@ const index = function(req, res)
   });
 
 };
+
+const getLeaderboardScore = function(record, type) {
+  switch (type) {
+    case 'LONGEST_BID':
+      return record.longest_bid_duration ? convertSecondsToCounterTime(record.longest_bid_duration) : 0;
+    break;
+    case 'LAST_BID':
+    return record.last_bid_duration ? convertSecondsToCounterTime(record.last_bid_duration) : 0;
+    break;
+    case 'TOTAL_WINS':
+      return record.total_wins || 0;
+    break;
+    case 'LONGEST_STREAK':
+      return record.longest_streak || 0;
+    break;
+    default:
+      return record.total_wins || 0;
+    break;
+  } 
+}
 
 export default {
   index
