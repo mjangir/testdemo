@@ -92,7 +92,7 @@ const index = function(req, res)
           longest_bid_duration: record.longest_bid_duration ? getHumanDuration(record.longest_bid_duration) : 0,
           last_bid_duration:    record.last_bid_duration ? getHumanDuration(record.last_bid_duration) : 0,
           total_wins:           record.total_wins ? record.total_wins : 0,
-          longest_streak:       record.longest_streak ? longest_streak.total_wins : 0,
+          longest_streak:       record.longest_streak ? record.total_wins : 0,
           rank:                 ++rank,
           score:                getLeaderboardScore(record, type)
       };
