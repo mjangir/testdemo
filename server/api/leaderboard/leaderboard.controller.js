@@ -132,7 +132,7 @@ const getLeaderboardScore = function(record, type) {
 }
 
 const getHumanDuration = function(seconds) {
-  return msToTime(seconds);
+  return msToTime(seconds * 1000);
 }
 
 function msToTime(duration) {
