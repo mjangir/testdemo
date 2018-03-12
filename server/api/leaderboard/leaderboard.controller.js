@@ -101,8 +101,9 @@ const index = function(req, res)
       'status': 'success',
       'data': result
     });
-  }).catch(function()
+  }).catch(function(err)
   {
+    console.log(err);
     return res.status(500).json({
       'status': 'error',
       'data': 'Error occured while processing'
