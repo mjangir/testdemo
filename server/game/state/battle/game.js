@@ -295,7 +295,8 @@ BattleGame.prototype.getBattleButtonsInfo = function(user) {
  * @returns {*}
  */
 BattleGame.prototype.startGame = function() {
-	var minPlayers = this.parent.minPlayersRequired;
+  var minPlayers = this.parent.minPlayersRequired;
+  var context = this;
 
   if(!this.isStarted() && this.getAllUsers().length >= minPlayers) {
     var socketNs 	= global.ticktockGameState.jackpotSocketNs,
