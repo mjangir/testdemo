@@ -1,6 +1,7 @@
 import Bid from './bid';
 import { getUserObjectById, convertSecondsToCounterTime } from '../../../utils/functions';
 import _ from 'lodash';
+import moment from 'moment';
 
 /**
  * Constructor
@@ -208,6 +209,34 @@ BidContainer.prototype.getTotalBidsCountByUserId = function(userId) {
 BidContainer.prototype.getLongestBidDurationByUserId = function(userId, formatted) {
 	var longestBid 	= this.getLongestBid(userId),
 		duration 	= longestBid != null ? longestBid.getDuration() : null;
+
+	if(typeof formatted != 'undefined' && formatted == true && duration != null) {
+		return this.formattedClockTime(duration);
+	}
+
+	return duration;
+}
+
+/**
+ * Get Longest Bid Duration By User ID
+ * 
+ * @param Integer userId
+ * @param Boolean formatted
+ * @returns {*}
+ */
+BidContainer.prototype.getLastBidDurationByUserId = function(userId, formatted) {
+  var userBids = this.getAllBids(userId);
+  var duration = null;
+
+  userBids = _.sortBy(userBids, function(o) { return new moment(o.endTime); });
+
+  if(userBids.length > 0) {
+    if(userBids[0].endTime == null) {
+      var duration 	= userBids[0].getRealTimeDuration();
+    } else {
+      var duration 	= userBids[userBids.length - 1].getDuration();
+    }
+  }
 
 	if(typeof formatted != 'undefined' && formatted == true && duration != null) {
 		return this.formattedClockTime(duration);
