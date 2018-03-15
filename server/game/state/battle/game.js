@@ -310,6 +310,12 @@ BattleGame.prototype.startGame = function() {
       return setInterval(function() {
         if(i > time) {
           clearInterval(interval);
+          updateBattleScreen(this, BATTLE_SCREEN_SCENE_GAME, [
+            BATTLE_SCREEN_COMPONENT_JACKPOT_TIMER, 
+            BATTLE_SCREEN_COMPONENT_BATTLE_HEADER,
+            BATTLE_SCREEN_COMPONENT_BIDS,
+            BATTLE_SCREEN_COMPONENT_FOOTER
+          ]);
         } else {
           updateBattleScreen(context, BATTLE_SCREEN_SCENE_COUNTDOWN, null, null, {time: parseInt(countdn/1000, 10)});
           countdn -= 1000;
