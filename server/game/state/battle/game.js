@@ -309,7 +309,6 @@ BattleGame.prototype.startGame = function() {
     interval = (function(i, time, context) {
       return setInterval(function() {
         if(i > time) {
-          context.gameStatus = 'STARTED';
           clearInterval(interval);
         } else {
           updateBattleScreen(context, BATTLE_SCREEN_SCENE_COUNTDOWN, null, null, {time: parseInt(countdn/1000, 10)});
@@ -362,6 +361,9 @@ BattleGame.prototype.placeBid = function(userId, socket) {
   }
 
   return this.bidContainer.placeBid(userId, socket, function(bidContainer, parent, socket, bid) {
+    if(context.gameStatus == 'NOT_STARTED') {
+      context.gameStatus = 'STARTED';
+    }
     if(user) {
       user.afterPlacedBid(bidContainer, parent, socket, bid);
       this.getClock('game').increaseBy(this.parent.increaseSecondsOnBid);
