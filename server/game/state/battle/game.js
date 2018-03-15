@@ -309,7 +309,7 @@ BattleGame.prototype.startGame = function() {
     interval = (function(i, time, context) {
       return setInterval(function() {
         if(i > time) {
-          updateBattleScreen(this, BATTLE_SCREEN_SCENE_GAME, [
+          updateBattleScreen(context, BATTLE_SCREEN_SCENE_GAME, [
             BATTLE_SCREEN_COMPONENT_JACKPOT_TIMER, 
             BATTLE_SCREEN_COMPONENT_BATTLE_HEADER,
             BATTLE_SCREEN_COMPONENT_BIDS,
