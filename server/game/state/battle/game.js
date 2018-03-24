@@ -296,7 +296,6 @@ BattleGame.prototype.getBattleButtonsInfo = function(user) {
  */
 BattleGame.prototype.startGame = function() {
   var minPlayers = this.parent.minPlayersRequired;
-  var context = this;
 
   if(!this.isStarted() && this.getAllUsers().length >= minPlayers) {
     var socketNs 	= global.ticktockGameState.jackpotSocketNs,
@@ -310,13 +309,11 @@ BattleGame.prototype.startGame = function() {
     interval = (function(i, time, context) {
       return setInterval(function() {
         if(i > time) {
-          updateBattleScreen(context, BATTLE_SCREEN_SCENE_GAME, [
-            BATTLE_SCREEN_COMPONENT_JACKPOT_TIMER, 
-            BATTLE_SCREEN_COMPONENT_BATTLE_HEADER,
-            BATTLE_SCREEN_COMPONENT_BIDS,
-            BATTLE_SCREEN_COMPONENT_FOOTER
-          ]);
           clearInterval(interval);
+          updateBattleScreen(context, BATTLE_SCREEN_SCENE_GAME, [
+            BATTLE_SCREEN_COMPONENT_MY_INFO,
+            BATTLE_SCREEN_COMPONENT_PLAYERS
+          ]);
         } else {
           updateBattleScreen(context, BATTLE_SCREEN_SCENE_COUNTDOWN, null, null, {time: parseInt(countdn/1000, 10)});
           countdn -= 1000;
@@ -361,6 +358,7 @@ BattleGame.prototype.runEverySecond = function() {
  */
 BattleGame.prototype.placeBid = function(userId, socket) {
   var user = this.jackpotGame.getUserById(userId);
+  var context= this;
 
   if(user && this.isUserBidConsecutive(user)) {
     showErrorPopup(user.socket, CONSECUTIVE_BIDS_ERROR);
