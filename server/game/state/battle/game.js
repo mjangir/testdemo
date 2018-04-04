@@ -359,20 +359,26 @@ BattleGame.prototype.runEverySecond = function() {
  * @param {String} userId 
  */
 BattleGame.prototype.placeBid = function(userId, socket) {
+  console.log("entering place bid")
   var user = this.jackpotGame.getUserById(userId);
   var context= this;
 
+  console.log("got the user")
   if(user && this.isUserBidConsecutive(user)) {
     showErrorPopup(user.socket, CONSECUTIVE_BIDS_ERROR);
     return false;
   }
 
+  console.log("place actual bid")
+
   return this.bidContainer.placeBid(userId, socket, function(bidContainer, parent, socket, bid) {
 
-    if(context.gameStatus == 'NOT_STARTED') {
+    console.log("calling callback", this.gameStatus);
+    if(this.gameStatus == 'NOT_STARTED') {
       console.log("first time start the game");
-      context.gameStatus = 'STARTED';
+      this.gameStatus = 'STARTED';
     }
+    console.log("if user exists")
     if(user) {
       user.afterPlacedBid(bidContainer, parent, socket, bid);
       this.getClock('game').increaseBy(this.parent.increaseSecondsOnBid);
