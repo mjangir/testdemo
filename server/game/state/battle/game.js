@@ -333,6 +333,8 @@ BattleGame.prototype.startGame = function() {
 BattleGame.prototype.runEverySecond = function() {
   var forceFinish = false;
 
+  console.log(this.gameStatus);
+
   if(this.getClock('game').remaining > 0 && this.gameStatus == 'STARTED') {
     this.countDown();
     updateBattleScreen(this, BATTLE_SCREEN_SCENE_GAME, [
@@ -366,7 +368,9 @@ BattleGame.prototype.placeBid = function(userId, socket) {
   }
 
   return this.bidContainer.placeBid(userId, socket, function(bidContainer, parent, socket, bid) {
+
     if(context.gameStatus == 'NOT_STARTED') {
+      console.log("first time start the game");
       context.gameStatus = 'STARTED';
     }
     if(user) {
