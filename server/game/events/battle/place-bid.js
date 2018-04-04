@@ -51,7 +51,7 @@ function handlePlacebid(socket, data) {
   }
 
   // Otherwise Place Bid If Game Is Started
-  if(battleGame.isStarted()) {
+  if(battleGame.gameStatus != 'FINISHED') {
     bid = battleGame.placeBid(data.userId, socket);
   }
 
